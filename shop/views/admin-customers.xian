@@ -1,0 +1,45 @@
+{{> head}}
+{{> admin-nav}}
+
+<div class="mx-auto flex w-full max-w-[1440px] flex-wrap gap-6 p-6 md:flex-nowrap">
+  {{> admin-side}}
+
+  <main class="flex min-w-0 flex-1 flex-col gap-5">
+    <h1 class="text-[28px] font-extrabold tracking-tight">Customers</h1>
+    {{> flash}}
+    <div class="card overflow-x-auto rounded-[18px]">
+      <table class="w-full min-w-[760px] border-collapse text-sm">
+        <thead>
+          <tr class="bg-peach-soft text-left">
+            <th scope="col" class="px-4 py-3 font-bold">Code</th>
+            <th scope="col" class="px-4 py-3 font-bold">Name</th>
+            <th scope="col" class="px-4 py-3 font-bold">Email</th>
+            <th scope="col" class="px-4 py-3 font-bold">Phone</th>
+            <th scope="col" class="px-4 py-3 font-bold">City</th>
+            <th scope="col" class="px-4 py-3 text-right font-bold">Orders</th>
+            <th scope="col" class="px-4 py-3 text-right font-bold">Delivered total</th>
+            <th scope="col" class="px-4 py-3 font-bold">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each customers}}
+          <tr class="border-t border-[#F6EADD]">
+            <td class="px-4 py-3.5 font-bold">{{customer_code}}</td>
+            <td class="px-4 py-3.5">{{name}}</td>
+            <td class="px-4 py-3.5 text-ink-soft">{{email}}</td>
+            <td class="px-4 py-3.5 text-ink-soft">{{phone}}</td>
+            <td class="px-4 py-3.5 text-ink-soft">{{city}}</td>
+            <td class="px-4 py-3.5 text-right">{{orders}}</td>
+            <td class="px-4 py-3.5 text-right font-bold">{{peso spent}}</td>
+            <td class="px-4 py-3.5"><span class="badge {{#if (eq status "active")}}bg-leaf-bg text-[#2F4A12]{{else}}bg-danger-bg text-[#8A2C17]{{/if}}">{{status}}</span></td>
+          </tr>
+          {{else}}
+          <tr><td colspan="8" class="px-4 py-10 text-center text-ink-muted">No customers yet.</td></tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+{{> footer}}

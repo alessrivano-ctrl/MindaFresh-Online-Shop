@@ -1,0 +1,83 @@
+{{> head}}
+<header class="border-b border-line bg-white">
+  <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-3.5">
+    <a href="/" class="flex items-center gap-2.5 text-ink no-underline">
+      <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 20A7 7 0 0 1 4 13c0-5 4-9 16-9 0 12-4 16-9 16Z"/><path d="M4 20c4-4 7-6 11-8"/></svg>
+      </span>
+      <span class="flex flex-col leading-tight">
+        <span class="text-xl font-extrabold tracking-tight">FreshCart</span>
+        <span class="text-xs font-medium text-ink-muted">by MindaFresh</span>
+      </span>
+    </a>
+    <a href="/cart" class="flex min-h-[44px] items-center text-[15px] font-semibold">← Back to cart</a>
+  </div>
+</header>
+
+<main class="mx-auto flex w-full max-w-6xl flex-col gap-5 px-6 pb-14 pt-7">
+  <h1 class="text-[32px] font-extrabold tracking-tight">Checkout</h1>
+  {{> flash}}
+
+  <form action="/checkout" method="POST" class="flex flex-wrap items-start gap-6">
+    <div class="flex min-w-0 flex-[999_1_560px] flex-col gap-5">
+      <section class="card flex flex-col gap-4 p-6">
+        <h2 class="text-xl font-extrabold">1. Delivery details</h2>
+        <div class="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3.5">
+          <div class="flex flex-col gap-1.5">
+            <label for="name" class="label">Full name</label>
+            <input id="name" type="text" value="{{form.name}}" class="field bg-cream" readonly>
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label for="phone" class="label">Mobile number</label>
+            <input id="phone" name="phone" type="tel" value="{{form.phone}}" placeholder="09171234567" pattern="09[0-9]{9}" title="11 digits, starting with 09" class="field">
+          </div>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label for="address" class="label">Delivery address</label>
+          <input id="address" name="address" type="text" value="{{form.address}}" placeholder="House no., street, barangay" required maxlength="200" class="field">
+        </div>
+        <div class="flex max-w-xs flex-col gap-1.5">
+          <label for="city" class="label">City</label>
+          <input id="city" name="city" type="text" value="{{form.city}}" required maxlength="100" class="field">
+        </div>
+      </section>
+
+      <section class="card flex flex-col gap-3.5 p-6">
+        <h2 class="text-xl font-extrabold">2. Payment method</h2>
+        <fieldset class="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-3">
+          <legend class="sr-only">Payment method</legend>
+          <label class="flex cursor-pointer items-start gap-3.5 rounded-2xl border border-[#DCC3AC] bg-white p-[18px] has-[:checked]:border-2 has-[:checked]:border-brand has-[:checked]:bg-peach-soft has-[:checked]:p-[17px]">
+            <input type="radio" name="payment_method" value="cod" {{#if (eq form.payment_method "cod")}}checked{{/if}} class="mt-0.5 h-5 w-5 accent-brand">
+            <span class="flex flex-col gap-1">
+              <span class="text-base font-bold">Cash on delivery</span>
+              <span class="text-sm text-ink-soft">Pay the rider when your order arrives.</span>
+            </span>
+          </label>
+          <label class="flex cursor-pointer items-start gap-3.5 rounded-2xl border border-[#DCC3AC] bg-white p-[18px] has-[:checked]:border-2 has-[:checked]:border-brand has-[:checked]:bg-peach-soft has-[:checked]:p-[17px]">
+            <input type="radio" name="payment_method" value="gcash" {{#if (eq form.payment_method "gcash")}}checked{{/if}} class="mt-0.5 h-5 w-5 accent-brand">
+            <span class="flex flex-col gap-1">
+              <span class="text-base font-bold">GCash</span>
+              <span class="text-sm text-ink-soft">Marked paid when you place the order.</span>
+            </span>
+          </label>
+        </fieldset>
+      </section>
+    </div>
+
+    <aside aria-label="Order summary" class="card flex min-w-0 flex-1 basis-[340px] flex-col gap-3.5 p-6">
+      <h2 class="text-xl font-extrabold">Your order</h2>
+      {{#each cart.items}}
+        <div class="flex justify-between gap-3 text-[15px]"><span>{{quantity}} × {{name}}</span><span class="font-semibold">{{peso line_total}}</span></div>
+      {{/each}}
+      <div class="flex flex-col gap-2.5 border-t border-line pt-3.5">
+        <div class="flex justify-between text-[15px]"><span class="text-ink-soft">Subtotal</span><span class="font-semibold">{{peso cart.subtotal}}</span></div>
+        <div class="flex justify-between text-[15px]"><span class="text-ink-soft">Delivery fee</span><span class="font-semibold">{{peso cart.shipping_fee}}</span></div>
+      </div>
+      <div class="flex items-baseline justify-between border-t border-line pt-3.5"><span class="text-base font-bold">Total</span><span class="text-[26px] font-extrabold text-brand">{{peso cart.total}}</span></div>
+      <button type="submit" class="btn-primary min-h-[52px] text-base">Place order · {{peso cart.total}}</button>
+      <div class="rounded-xl bg-peach px-3.5 py-3 text-[13px] leading-normal text-[#5C2A0C]">If an item runs out while you check out, nothing is saved and we show you how many are left.</div>
+    </aside>
+  </form>
+</main>
+
+{{> footer}}

@@ -1,0 +1,12 @@
+{{#each success_msg}}
+  <div role="status" class="flex items-center gap-3 rounded-2xl border border-[#B9D79A] bg-leaf-bg px-4 py-3 text-[15px] font-semibold text-[#2F4A12]">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>
+    <span>{{this}}</span>
+  </div>
+{{/each}}
+{{#each error_msg}}
+  <div role="alert" class="flex items-center gap-3 rounded-2xl border border-[#E9B4A6] bg-danger-bg px-4 py-3 text-[15px] font-semibold text-[#7A1F12]">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+    <span>{{this}}</span>
+  </div>
+{{/each}}

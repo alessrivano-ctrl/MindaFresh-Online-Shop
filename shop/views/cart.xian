@@ -1,0 +1,64 @@
+{{> head}}
+{{> shop-nav}}
+
+<main class="mx-auto flex w-full max-w-6xl flex-col gap-5 px-6 pb-14 pt-7">
+  <div class="flex flex-wrap items-baseline justify-between gap-3">
+    <h1 class="text-[32px] font-extrabold tracking-tight">Your cart</h1>
+    <a href="/" class="text-[15px] font-semibold">← Continue shopping</a>
+  </div>
+  {{> flash}}
+
+  {{#if cart.items.length}}
+  <div class="flex flex-wrap items-start gap-6">
+    <section aria-label="Cart items" class="card flex min-w-0 flex-[999_1_560px] flex-col">
+      {{#each cart.items}}
+      <div class="flex flex-wrap items-center gap-4 border-b border-[#F6EADD] px-6 py-5">
+        <a href="/products/{{product_code}}" class="h-[88px] w-[88px] flex-none overflow-hidden rounded-[14px]" tabindex="-1" aria-hidden="true">
+          {{> product-photo h="h-[88px]" small=true}}
+        </a>
+        <div class="flex min-w-0 flex-1 basis-52 flex-col gap-1">
+          <a href="/products/{{product_code}}" class="text-[17px] font-bold text-ink hover:text-brand">{{name}}</a>
+          <span class="text-sm text-ink-muted">{{peso price}} per {{unit}}</span>
+          {{#if unavailable}}<span class="text-sm font-semibold text-danger">No longer sold online. Please remove it.</span>{{/if}}
+          {{#if short}}<span class="text-sm font-semibold text-danger">Only {{stock}} left. Please lower the quantity.</span>{{/if}}
+          <form action="/cart/{{id}}/remove" method="POST">
+            <button type="submit" class="min-h-[36px] py-2 text-sm font-semibold text-danger hover:underline">Remove</button>
+          </form>
+        </div>
+        <form action="/cart/{{id}}/update" method="POST" class="flex items-center overflow-hidden rounded-xl border border-line-strong">
+          <button type="submit" name="step" value="down" aria-label="Decrease quantity of {{name}}" class="min-h-[44px] w-11 bg-peach-soft text-lg font-bold hover:bg-peach">−</button>
+          <span class="w-12 text-center text-base font-bold" aria-label="Quantity">{{quantity}}</span>
+          <button type="submit" name="step" value="up" aria-label="Increase quantity of {{name}}" class="min-h-[44px] w-11 bg-peach-soft text-lg font-bold hover:bg-peach">+</button>
+        </form>
+        <span class="w-[110px] text-right text-lg font-extrabold">{{peso line_total}}</span>
+      </div>
+      {{/each}}
+      <div class="flex items-center gap-2.5 px-6 py-4 text-sm text-ink-soft">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+        <span>Stock is checked again when you place your order.</span>
+      </div>
+    </section>
+
+    <aside aria-label="Order summary" class="card flex min-w-0 flex-1 basis-80 flex-col gap-3.5 p-6">
+      <h2 class="text-xl font-extrabold">Summary</h2>
+      <div class="flex justify-between text-[15px]"><span class="text-ink-soft">Subtotal ({{cart.count}} {{plural cart.count "item" "items"}})</span><span class="font-semibold">{{peso cart.subtotal}}</span></div>
+      <div class="flex justify-between text-[15px]"><span class="text-ink-soft">Delivery fee</span><span class="font-semibold">{{peso cart.shipping_fee}}</span></div>
+      <div class="flex items-baseline justify-between border-t border-line pt-3.5"><span class="text-base font-bold">Total</span><span class="text-[26px] font-extrabold text-brand">{{peso cart.total}}</span></div>
+      {{#if cart.hasProblem}}
+        <button type="button" disabled class="btn min-h-[52px] bg-[#F3E9DF] text-ink-muted">Fix the items above to check out</button>
+      {{else}}
+        <a href="/checkout" class="btn-primary min-h-[52px] text-base">Proceed to checkout</a>
+      {{/if}}
+      <span class="text-center text-[13px] text-ink-muted">Cash on delivery or GCash</span>
+    </aside>
+  </div>
+  {{else}}
+  <div class="card flex flex-col items-center gap-4 p-14 text-center">
+    <p class="text-xl font-bold">Your cart is empty.</p>
+    <p class="text-ink-muted">Add some fresh produce, frozen goods or pantry staples.</p>
+    <a href="/" class="btn-primary">Start shopping</a>
+  </div>
+  {{/if}}
+</main>
+
+{{> footer}}

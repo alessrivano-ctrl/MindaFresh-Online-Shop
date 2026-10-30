@@ -1,0 +1,101 @@
+{{> head}}
+{{> admin-nav}}
+
+<div class="mx-auto flex w-full max-w-[1440px] flex-wrap gap-6 p-6 md:flex-nowrap">
+  {{> admin-side}}
+
+  <main class="flex min-w-0 flex-1 flex-col gap-5">
+    <a href="/admin/orders" class="text-[15px] font-semibold">← All orders</a>
+    {{> flash}}
+
+    {{#with order}}
+    <div class="flex flex-wrap items-end justify-between gap-3">
+      <div class="flex flex-col gap-1.5">
+        <span class="text-sm font-semibold text-ink-muted">Placed {{datetime ordered_at}}{{#if delivered_at}} · Delivered {{datetime delivered_at}}{{/if}}</span>
+        <div class="flex flex-wrap items-center gap-3">
+          <h1 class="text-[30px] font-extrabold tracking-tight">{{order_code}}</h1>
+          <span class="badge px-3 py-1.5 text-sm {{statusBadge order_status}}">{{statusLabel order_status}}</span>
+        </div>
+      </div>
+    </div>
+    {{/with}}
+
+    {{#if isAdmin}}
+    <section aria-label="Actions" class="card flex flex-wrap items-center justify-between gap-4 bg-peach-soft p-5">
+      <p class="text-[15px] text-ink-soft">
+        {{#if nextLabel}}Next step for this order:{{else}}{{#if canReturn}}This order was delivered. If the customer sends it back, mark it returned.{{else}}No more steps for this order.{{/if}}{{/if}}
+      </p>
+      <div class="flex flex-wrap gap-2.5">
+        {{#if nextLabel}}
+          <form action="/admin/orders/{{order.order_code}}/advance" method="POST">
+            <button type="submit" class="btn-primary">{{nextLabel}}</button>
+          </form>
+        {{/if}}
+        {{#if canCancel}}
+          <form action="/admin/orders/{{order.order_code}}/cancel" method="POST" onsubmit="return confirm('Cancel {{order.order_code}} and return its stock?')">
+            <button type="submit" class="btn-danger">Cancel order</button>
+          </form>
+        {{/if}}
+        {{#if canReturn}}
+          <form action="/admin/orders/{{order.order_code}}/return" method="POST" onsubmit="return confirm('Mark {{order.order_code}} returned, refund it and put the stock back?')">
+            <button type="submit" class="btn-danger">Mark returned</button>
+          </form>
+        {{/if}}
+      </div>
+    </section>
+    {{else}}
+      <p class="rounded-2xl bg-peach-soft px-4 py-3 text-sm text-ink-soft">You can view orders. Only an admin can change them.</p>
+    {{/if}}
+
+    <div class="flex flex-wrap items-start gap-6">
+      <section class="card flex min-w-0 flex-[999_1_520px] flex-col gap-3.5 p-6">
+        <h2 class="text-xl font-extrabold">Items</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[460px] text-sm">
+            <thead><tr class="text-left text-ink-muted">
+              <th scope="col" class="pb-2 font-semibold">Product</th>
+              <th scope="col" class="pb-2 text-right font-semibold">Qty</th>
+              <th scope="col" class="pb-2 text-right font-semibold">Price</th>
+              <th scope="col" class="pb-2 text-right font-semibold">Total</th>
+            </tr></thead>
+            <tbody>
+              {{#each order.items}}
+              <tr class="border-t border-[#F6EADD]">
+                <td class="py-2.5 font-semibold">{{product_name}}</td>
+                <td class="py-2.5 text-right">{{quantity}}</td>
+                <td class="py-2.5 text-right">{{peso unit_price}}</td>
+                <td class="py-2.5 text-right font-bold">{{peso line_total}}</td>
+              </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+        <div class="flex flex-col gap-2 border-t border-line pt-3.5 text-[15px]">
+          <div class="flex justify-between"><span class="text-ink-soft">Subtotal</span><span>{{peso order.subtotal}}</span></div>
+          <div class="flex justify-between"><span class="text-ink-soft">Delivery fee</span><span>{{peso order.shipping_fee}}</span></div>
+          <div class="flex justify-between text-lg font-extrabold"><span>Total</span><span class="text-brand">{{peso order.total_amount}}</span></div>
+        </div>
+      </section>
+
+      <aside class="flex min-w-0 flex-1 basis-72 flex-col gap-4">
+        <section class="card flex flex-col gap-1.5 p-5 text-[15px]">
+          <h2 class="mb-1 text-lg font-extrabold">Customer</h2>
+          <span class="font-semibold">{{order.customerName}} <span class="font-normal text-ink-muted">({{order.Customer.customer_code}})</span></span>
+          <span class="text-ink-soft">{{order.Customer.email}}</span>
+          {{#if order.Customer.phone}}<span class="text-ink-soft">{{order.Customer.phone}}</span>{{/if}}
+        </section>
+        <section class="card flex flex-col gap-1.5 p-5 text-[15px]">
+          <h2 class="mb-1 text-lg font-extrabold">Delivery to</h2>
+          <span class="leading-normal text-ink-soft">{{order.delivery_address}}</span>
+        </section>
+        <section class="card flex flex-col gap-1.5 p-5 text-[15px]">
+          <h2 class="mb-1 text-lg font-extrabold">Payment</h2>
+          <span>{{payMethod order.payment_method}}</span>
+          <span class="badge self-start {{#if (eq order.payment_status "paid")}}bg-leaf-bg text-[#2F4A12]{{else}}bg-[#F3E9DF] text-ink-soft{{/if}}">{{payStatus order.payment_status}}</span>
+        </section>
+      </aside>
+    </div>
+  </main>
+</div>
+
+{{> footer}}

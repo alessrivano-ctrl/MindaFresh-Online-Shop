@@ -1,0 +1,6 @@
+{
+  "name": "mindafresh-erp",
+  "private": true,
+  "type": "module",
+  "scripts": { "sync": "node shared/sync.js" }
+}

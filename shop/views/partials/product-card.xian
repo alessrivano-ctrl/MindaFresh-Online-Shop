@@ -1,0 +1,33 @@
+<article class="card flex flex-col overflow-hidden">
+  <a href="/products/{{product_code}}" class="block" tabindex="-1" aria-hidden="true">
+    {{> product-photo h="h-[170px]"}}
+  </a>
+  <div class="flex flex-1 flex-col gap-2 p-4">
+    <span class="text-xs font-semibold uppercase tracking-wider text-ink-muted">{{category}}</span>
+    <a href="/products/{{product_code}}" class="text-base font-bold leading-snug text-ink hover:text-brand">{{name}}</a>
+    <div class="flex items-baseline gap-1.5">
+      <span class="text-xl font-extrabold">{{peso price}}</span>
+      <span class="text-[13px] text-ink-muted">/ {{unit}}</span>
+    </div>
+    {{#if inStock}}
+      {{#if lowStock}}
+        <span class="text-[13px] font-semibold text-danger">Only {{stock}} left</span>
+      {{else}}
+        <span class="text-[13px] font-semibold text-leaf">{{stock}} in stock</span>
+      {{/if}}
+    {{else}}
+      <span class="text-[13px] font-semibold text-ink-muted">Out of stock</span>
+    {{/if}}
+    <div class="mt-auto pt-1.5">
+      {{#if inStock}}
+        <form action="/cart/add" method="POST">
+          <input type="hidden" name="product_code" value="{{product_code}}">
+          <input type="hidden" name="quantity" value="1">
+          <button type="submit" class="btn-primary w-full">Add to cart</button>
+        </form>
+      {{else}}
+        <button type="button" disabled class="btn w-full bg-[#F3E9DF] text-ink-muted">Out of stock</button>
+      {{/if}}
+    </div>
+  </div>
+</article>

@@ -1,0 +1,15 @@
+<header class="bg-ink text-white">
+  <div class="flex flex-wrap items-center justify-between gap-3 px-6 py-3">
+    <a href="/admin/orders" class="flex items-center gap-2.5 text-white no-underline">
+      <span class="flex h-9 w-9 items-center justify-center rounded-[10px] bg-brand">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 20A7 7 0 0 1 4 13c0-5 4-9 16-9 0 12-4 16-9 16Z"/><path d="M4 20c4-4 7-6 11-8"/></svg>
+      </span>
+      <span class="text-[17px] font-extrabold">FreshCart Admin</span>
+    </a>
+    <div class="flex items-center gap-4 text-sm">
+      <span class="text-[#F3DCC8]">{{staff.full_name}} · {{staff.employee_code}} · <strong class="text-white">{{staff.role}}</strong></span>
+      <a href="/" class="flex min-h-[44px] items-center font-semibold text-[#F3DCC8] hover:text-white">View shop</a>
+      <a href="/admin/logout" class="flex min-h-[44px] items-center font-semibold text-white">Log out</a>
+    </div>
+  </div>
+</header>

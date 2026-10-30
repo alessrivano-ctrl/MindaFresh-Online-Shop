@@ -1,0 +1,82 @@
+{{> head}}
+{{> shop-nav}}
+
+<main class="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 pb-14 pt-6">
+  {{> flash}}
+  <nav aria-label="Breadcrumb" class="flex flex-wrap gap-2 text-sm text-ink-muted">
+    <a href="/" class="font-semibold">Shop</a><span aria-hidden="true">/</span>
+    <a href="/?category={{product.category_code}}#products" class="font-semibold">{{product.category}}</a><span aria-hidden="true">/</span>
+    <span>{{product.name}}</span>
+  </nav>
+
+  {{#with product}}
+  <section class="flex flex-wrap items-start gap-8">
+    <div class="flex-1 basis-[440px] overflow-hidden rounded-3xl">
+      {{> product-photo h="h-[440px]"}}
+    </div>
+
+    <div class="card flex flex-1 basis-[420px] flex-col gap-4 rounded-3xl p-8">
+      <div class="flex flex-wrap gap-2">
+        <span class="badge bg-peach text-brand-dark">{{category}}</span>
+        <span class="badge bg-peach-soft font-semibold text-ink-muted">{{product_code}}</span>
+      </div>
+      <h1 class="text-4xl font-extrabold leading-tight tracking-tight">{{name}}</h1>
+      <div class="flex items-baseline gap-2">
+        <span class="text-[34px] font-extrabold text-brand">{{peso price}}</span>
+        <span class="text-[15px] text-ink-muted">per {{unit}}</span>
+      </div>
+      {{#if inStock}}
+        <div class="flex items-center gap-2 text-[15px] font-semibold {{#if lowStock}}text-danger{{else}}text-leaf{{/if}}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+          {{#if lowStock}}Only {{stock}} left{{else}}{{stock}} in stock{{/if}}
+        </div>
+      {{else}}
+        <div class="text-[15px] font-semibold text-ink-muted">Out of stock right now</div>
+      {{/if}}
+      {{#if description}}<p class="text-base leading-relaxed text-ink-soft">{{description}}</p>{{/if}}
+
+      {{#if inStock}}
+      <form action="/cart/add" method="POST" class="flex flex-col gap-3.5 border-t border-line pt-4">
+        <input type="hidden" name="product_code" value="{{product_code}}">
+        <label for="qty" class="label">Quantity</label>
+        <div class="flex flex-wrap items-center gap-3">
+          <input id="qty" name="quantity" type="number" min="1" max="{{stock}}" value="1" required class="field w-28 text-center text-[17px] font-bold">
+          <span class="text-sm text-ink-muted">Up to {{stock}} {{unit}}</span>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <button type="submit" class="btn-primary min-h-[52px] flex-1 basis-48 text-base">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.6 12.4a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.5L21.5 8H6"/></svg>
+            Add to cart
+          </button>
+          <button type="submit" name="buy_now" value="1" class="btn-dark min-h-[52px] flex-1 basis-40 text-base">Buy now</button>
+        </div>
+      </form>
+      {{/if}}
+
+      <div class="flex flex-col gap-2.5 rounded-2xl bg-cream p-4 text-sm text-ink-soft">
+        <div class="flex items-center gap-2.5">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/></svg>
+          <span>{{peso @root.shippingFee}} delivery anywhere in Calapan City</span>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg>
+          <span>Cash on delivery or GCash</span>
+        </div>
+      </div>
+    </div>
+  </section>
+  {{/with}}
+
+  {{#if related.length}}
+  <section class="flex flex-col gap-3.5">
+    <h2 class="text-[22px] font-extrabold">More from {{product.category}}</h2>
+    <div class="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
+      {{#each related}}
+        {{> product-card}}
+      {{/each}}
+    </div>
+  </section>
+  {{/if}}
+</main>
+
+{{> footer}}

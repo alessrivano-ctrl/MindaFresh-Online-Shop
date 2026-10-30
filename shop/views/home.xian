@@ -1,0 +1,66 @@
+{{> head}}
+{{> shop-nav}}
+
+<main class="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 pb-14 pt-7">
+  {{> flash}}
+
+  {{#unless filtered}}
+  <section class="flex flex-wrap items-center justify-between gap-6 rounded-3xl bg-brand p-10 text-white">
+    <div class="flex flex-1 basis-[420px] flex-col gap-3.5">
+      <span class="self-start rounded-full bg-peach px-3 py-1.5 text-[13px] font-bold text-ink">Delivering in Calapan City</span>
+      <h1 class="text-[44px] font-extrabold leading-[1.08] tracking-tight">Fresh from Mindoro farms,<br>straight to your door.</h1>
+      <p class="max-w-[520px] text-[17px] leading-relaxed">Order produce, frozen goods and pantry staples online. Pay cash on delivery or with GCash.</p>
+      <div class="mt-1.5 flex flex-wrap gap-3">
+        <a href="#products" class="btn min-h-[48px] bg-white px-6 text-brand-dark hover:bg-peach">Shop now</a>
+        <a href="/orders" class="btn min-h-[48px] border border-brand-light px-6 font-semibold text-white hover:bg-brand-dark">Track an order</a>
+      </div>
+    </div>
+    <div class="grid flex-[0_1_340px] grid-cols-2 gap-3">
+      <div class="flex flex-col gap-1.5 rounded-2xl bg-brand-dark p-4">
+        <span class="text-[22px] font-extrabold">{{peso shippingFee}}</span>
+        <span class="text-[13px] text-peach">flat delivery fee</span>
+      </div>
+      <div class="flex flex-col gap-1.5 rounded-2xl bg-brand-dark p-4">
+        <span class="text-[22px] font-extrabold">COD</span>
+        <span class="text-[13px] text-peach">or GCash at checkout</span>
+      </div>
+      <div class="col-span-2 flex flex-col gap-1.5 rounded-2xl bg-brand-dark p-4">
+        <span class="text-base font-bold">Live stock from our store</span>
+        <span class="text-[13px] text-peach">What you see is what we have on hand right now.</span>
+      </div>
+    </div>
+  </section>
+  {{/unless}}
+
+  <section id="products" class="flex flex-col gap-4">
+    <div class="flex flex-wrap items-end justify-between gap-3">
+      <div class="flex flex-col gap-1">
+        <h2 class="text-[26px] font-extrabold tracking-tight">
+          {{#if q}}Results for “{{q}}”{{else}}{{#if activeName}}{{activeName}}{{else}}Shop products{{/if}}{{/if}}
+        </h2>
+        <p class="text-sm text-ink-muted">{{products.length}} {{plural products.length "product" "products"}}{{#if filtered}} · <a href="/" class="font-semibold">Show all</a>{{/if}}</p>
+      </div>
+      <nav aria-label="Filter by category" class="flex flex-wrap gap-2">
+        <a href="/#products" class="chip {{#unless categoryCode}}border-ink bg-ink text-white{{else}}border-line-strong bg-white text-ink hover:bg-peach-soft{{/unless}}" {{#unless categoryCode}}aria-current="true"{{/unless}}>All</a>
+        {{#each categories}}
+          <a href="/?category={{code}}#products" class="chip {{#if active}}border-ink bg-ink text-white{{else}}border-line-strong bg-white text-ink hover:bg-peach-soft{{/if}}" {{#if active}}aria-current="true"{{/if}}>{{name}}</a>
+        {{/each}}
+      </nav>
+    </div>
+
+    {{#if products.length}}
+      <div class="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-[18px]">
+        {{#each products}}
+          {{> product-card}}
+        {{/each}}
+      </div>
+    {{else}}
+      <div class="card flex flex-col items-center gap-3 p-12 text-center">
+        <p class="text-lg font-bold">No products found.</p>
+        <p class="text-ink-muted">Try another word, or <a href="/" class="font-semibold">see all products</a>.</p>
+      </div>
+    {{/if}}
+  </section>
+</main>
+
+{{> footer}}

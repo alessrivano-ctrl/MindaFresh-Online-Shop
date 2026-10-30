@@ -1,0 +1,31 @@
+{{> head}}
+<header class="bg-ink text-white">
+  <div class="flex items-center gap-2.5 px-6 py-3">
+    <span class="flex h-9 w-9 items-center justify-center rounded-[10px] bg-brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 20A7 7 0 0 1 4 13c0-5 4-9 16-9 0 12-4 16-9 16Z"/><path d="M4 20c4-4 7-6 11-8"/></svg>
+    </span>
+    <span class="text-[17px] font-extrabold">FreshCart Admin</span>
+  </div>
+</header>
+
+<main class="mx-auto flex w-full max-w-md flex-col gap-5 px-6 pb-14 pt-12">
+  {{> flash}}
+  <form action="/admin/login" method="POST" class="card flex flex-col gap-4 p-8">
+    <div class="flex flex-col gap-1">
+      <h1 class="text-[28px] font-extrabold tracking-tight">Staff log in</h1>
+      <p class="text-[15px] text-ink-muted">Use the same username and password as the other MindaFresh modules.</p>
+    </div>
+    <div class="flex flex-col gap-1.5">
+      <label for="username" class="label">Username</label>
+      <input id="username" name="username" autocomplete="username" required class="field">
+    </div>
+    <div class="flex flex-col gap-1.5">
+      <label for="password" class="label">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required class="field">
+    </div>
+    <button type="submit" class="btn-dark min-h-[50px] text-base">Log in</button>
+  </form>
+  <p class="text-center text-sm text-ink-muted"><a href="/" class="font-semibold">← Back to the shop</a></p>
+</main>
+
+{{> footer}}

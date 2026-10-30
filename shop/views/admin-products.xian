@@ -1,0 +1,41 @@
+{{> head}}
+{{> admin-nav}}
+
+<div class="mx-auto flex w-full max-w-[1440px] flex-wrap gap-6 p-6 md:flex-nowrap">
+  {{> admin-side}}
+
+  <main class="flex min-w-0 flex-1 flex-col gap-5">
+    <div class="flex flex-col gap-1">
+      <h1 class="text-[28px] font-extrabold tracking-tight">Online products</h1>
+      <p class="text-sm text-ink-muted">Read from POS's products and stock_levels tables. Products, prices and stock are changed in the POS module.</p>
+    </div>
+    <div class="card overflow-x-auto rounded-[18px]">
+      <table class="w-full min-w-[760px] border-collapse text-sm">
+        <thead>
+          <tr class="bg-peach-soft text-left">
+            <th scope="col" class="px-4 py-3 font-bold">Code</th>
+            <th scope="col" class="px-4 py-3 font-bold">Product</th>
+            <th scope="col" class="px-4 py-3 font-bold">Category</th>
+            <th scope="col" class="px-4 py-3 text-right font-bold">Price</th>
+            <th scope="col" class="px-4 py-3 text-right font-bold">On hand</th>
+            <th scope="col" class="px-4 py-3 font-bold">In the Shop</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each products}}
+          <tr class="border-t border-[#F6EADD]">
+            <td class="px-4 py-3.5 font-bold">{{product_code}}</td>
+            <td class="px-4 py-3.5">{{name}} <span class="text-ink-muted">/ {{unit}}</span></td>
+            <td class="px-4 py-3.5 text-ink-soft">{{category}}</td>
+            <td class="px-4 py-3.5 text-right font-bold">{{peso price}}</td>
+            <td class="px-4 py-3.5 text-right {{#if low}}font-bold text-danger{{/if}}">{{stock}}{{#if low}} · low{{/if}}</td>
+            <td class="px-4 py-3.5"><span class="badge {{#if online}}bg-leaf-bg text-[#2F4A12]{{else}}bg-[#F3E9DF] text-ink-soft{{/if}}">{{#if online}}Shown{{else}}Hidden{{/if}}</span></td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+{{> footer}}

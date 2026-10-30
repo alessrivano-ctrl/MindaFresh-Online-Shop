@@ -1,0 +1,35 @@
+{{> head}}
+{{> shop-nav}}
+
+<main class="mx-auto flex w-full max-w-6xl flex-col gap-5 px-6 pb-14 pt-7">
+  <h1 class="text-[32px] font-extrabold tracking-tight">My orders</h1>
+  {{> flash}}
+
+  {{#if orders.length}}
+    <div class="flex flex-col gap-3">
+      {{#each orders}}
+      <a href="/orders/{{order_code}}" class="card flex flex-wrap items-center gap-x-6 gap-y-2 p-5 text-ink hover:border-brand-light">
+        <div class="flex min-w-0 flex-1 basis-72 flex-col gap-1">
+          <div class="flex flex-wrap items-center gap-2.5">
+            <span class="text-lg font-extrabold">{{order_code}}</span>
+            <span class="badge {{statusBadge order_status}}">{{statusLabel order_status}}</span>
+          </div>
+          <span class="text-sm text-ink-muted">{{datetime ordered_at}} · {{itemCount}} {{plural itemCount "item" "items"}}</span>
+          <span class="truncate text-sm text-ink-soft">{{summary}}</span>
+        </div>
+        <div class="flex flex-col items-end gap-1">
+          <span class="text-xl font-extrabold">{{peso total_amount}}</span>
+          <span class="text-[13px] text-ink-muted">{{payMethod payment_method}} · {{payStatus payment_status}}</span>
+        </div>
+      </a>
+      {{/each}}
+    </div>
+  {{else}}
+    <div class="card flex flex-col items-center gap-4 p-14 text-center">
+      <p class="text-xl font-bold">No orders yet.</p>
+      <a href="/" class="btn-primary">Start shopping</a>
+    </div>
+  {{/if}}
+</main>
+
+{{> footer}}

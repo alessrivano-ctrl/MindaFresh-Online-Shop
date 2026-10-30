@@ -1,0 +1,80 @@
+{{> head}}
+{{> admin-nav}}
+
+<div class="mx-auto flex w-full max-w-[1440px] flex-wrap gap-6 p-6 md:flex-nowrap">
+  {{> admin-side}}
+
+  <main class="flex min-w-0 flex-1 flex-col gap-5">
+    <div class="flex flex-wrap items-end justify-between gap-3">
+      <h1 class="text-[28px] font-extrabold tracking-tight">Orders</h1>
+      <form action="/admin/orders" method="GET" class="flex min-h-[44px] w-full max-w-xs items-center gap-2 rounded-xl border border-line-strong bg-white pl-3.5 pr-1.5">
+        {{#if status}}<input type="hidden" name="status" value="{{status}}">{{/if}}
+        <label for="aq" class="sr-only">Search orders</label>
+        <input id="aq" name="q" type="search" value="{{q}}" placeholder="Order code or customer" class="min-w-0 flex-1 border-0 bg-transparent py-2 text-sm outline-none">
+        <button type="submit" class="min-h-[34px] rounded-lg bg-ink px-3.5 text-sm font-semibold text-white">Search</button>
+      </form>
+    </div>
+    {{> flash}}
+
+    <section aria-label="Today" class="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-3">
+      <div class="card flex flex-col gap-1 p-4">
+        <span class="text-[13px] font-semibold text-ink-muted">To confirm</span>
+        <span class="text-[28px] font-extrabold {{#if stats.toConfirm}}text-brand{{/if}}">{{stats.toConfirm}}</span>
+      </div>
+      <div class="card flex flex-col gap-1 p-4">
+        <span class="text-[13px] font-semibold text-ink-muted">Confirmed or on the way</span>
+        <span class="text-[28px] font-extrabold">{{stats.inProgress}}</span>
+      </div>
+      <div class="card flex flex-col gap-1 p-4">
+        <span class="text-[13px] font-semibold text-ink-muted">Delivered today</span>
+        <span class="text-[28px] font-extrabold">{{stats.deliveredToday}}</span>
+      </div>
+      <div class="card flex flex-col gap-1 p-4">
+        <span class="text-[13px] font-semibold text-ink-muted">Online sales today</span>
+        <span class="text-[28px] font-extrabold">{{peso stats.salesToday}}</span>
+      </div>
+    </section>
+
+    <nav aria-label="Filter by status" class="flex flex-wrap gap-1.5">
+      {{#each filters}}
+        <a href="/admin/orders{{#if key}}?status={{key}}{{/if}}" {{#if active}}aria-current="true"{{/if}}
+           class="inline-flex min-h-[36px] items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-bold {{#if active}}border-ink bg-ink text-white{{else}}border-line-strong bg-white text-ink hover:bg-peach-soft{{/if}}">
+          {{label}} <span class="{{#if active}}text-peach{{else}}text-ink-muted{{/if}}">{{n}}</span>
+        </a>
+      {{/each}}
+    </nav>
+
+    <div class="card overflow-x-auto rounded-[18px]">
+      <table class="w-full min-w-[760px] border-collapse text-sm">
+        <thead>
+          <tr class="bg-peach-soft text-left">
+            <th scope="col" class="px-4 py-3 font-bold">Order</th>
+            <th scope="col" class="px-4 py-3 font-bold">Customer</th>
+            <th scope="col" class="px-4 py-3 font-bold">Ordered</th>
+            <th scope="col" class="px-4 py-3 text-right font-bold">Total</th>
+            <th scope="col" class="px-4 py-3 font-bold">Payment</th>
+            <th scope="col" class="px-4 py-3 font-bold">Status</th>
+            <th scope="col" class="px-4 py-3"><span class="sr-only">Action</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each orders}}
+          <tr class="border-t border-[#F6EADD] {{#if (eq order_status "pending")}}bg-cream{{/if}}">
+            <td class="px-4 py-3.5 font-bold">{{order_code}}</td>
+            <td class="px-4 py-3.5">{{customer}}</td>
+            <td class="px-4 py-3.5 text-ink-soft">{{datetime ordered_at}}</td>
+            <td class="px-4 py-3.5 text-right font-bold">{{peso total_amount}}</td>
+            <td class="px-4 py-3.5 text-ink-soft">{{payMethod payment_method}} · {{payStatus payment_status}}</td>
+            <td class="px-4 py-3.5"><span class="badge {{statusBadge order_status}}">{{statusLabel order_status}}</span></td>
+            <td class="px-4 py-3.5"><a href="/admin/orders/{{order_code}}" class="font-bold">View</a></td>
+          </tr>
+          {{else}}
+          <tr><td colspan="7" class="px-4 py-10 text-center text-ink-muted">No orders here yet.</td></tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+{{> footer}}

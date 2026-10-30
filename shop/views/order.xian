@@ -1,0 +1,85 @@
+{{> head}}
+{{> shop-nav}}
+
+<main class="mx-auto flex w-full max-w-6xl flex-col gap-5 px-6 pb-14 pt-7">
+  {{> flash}}
+
+  {{#with order}}
+  <div class="flex flex-wrap items-end justify-between gap-3">
+    <div class="flex flex-col gap-1.5">
+      <span class="text-sm font-semibold text-ink-muted">Placed {{datetime ordered_at}}</span>
+      <h1 class="text-[34px] font-extrabold tracking-tight">Order {{order_code}}</h1>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <span class="badge px-3.5 py-1.5 text-sm {{statusBadge order_status}}">{{statusLabel order_status}}</span>
+      <span class="badge bg-peach-soft px-3.5 py-1.5 text-sm text-ink-soft">{{payMethod payment_method}} · {{payStatus payment_status}}</span>
+    </div>
+  </div>
+  {{/with}}
+
+  {{#if stopped}}
+    <section class="card border-[#E9B4A6] bg-danger-bg p-6 text-[#7A1F12]">
+      <p class="text-lg font-bold">This order was {{statusLower order.order_status}}.</p>
+      <p class="mt-1 text-[15px]">The items were put back in stock.{{#if (eq order.payment_status "refunded")}} Your payment is marked refunded.{{/if}}</p>
+    </section>
+  {{else}}
+    <section aria-label="Order progress" class="card px-6 py-7">
+      <ol class="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-5">
+        {{#each steps}}
+        <li class="flex flex-col gap-2.5" {{#if current}}aria-current="step"{{/if}}>
+          <div class="flex items-center gap-2.5">
+            <span class="flex h-9 w-9 flex-none items-center justify-center rounded-full border-2 text-sm font-extrabold {{#if done}}border-brand bg-brand text-white{{else}}border-line-strong bg-peach-soft text-ink-muted{{/if}}">{{#if done}}✓{{else}}{{n}}{{/if}}</span>
+            {{#unless last}}<span class="h-1 flex-1 rounded {{#if done}}{{#if current}}bg-line{{else}}bg-brand{{/if}}{{else}}bg-line{{/if}}"></span>{{/unless}}
+          </div>
+          <span class="text-base font-bold {{#unless done}}text-ink-muted{{/unless}}">{{label}}</span>
+        </li>
+        {{/each}}
+      </ol>
+      {{#if (eq order.order_status "delivered")}}
+        <p class="mt-5 text-sm text-ink-muted">Delivered {{datetime order.delivered_at}}.</p>
+      {{/if}}
+    </section>
+  {{/if}}
+
+  <div class="flex flex-wrap items-start gap-6">
+    <section class="card flex min-w-0 flex-[999_1_560px] flex-col gap-3.5 p-6">
+      <h2 class="text-xl font-extrabold">Items</h2>
+      {{#each order.items}}
+        <div class="flex items-center gap-3.5">
+          <span class="flex-1 text-[15px] font-semibold">{{quantity}} × {{product_name}} <span class="font-normal text-ink-muted">· {{peso unit_price}} each</span></span>
+          <span class="text-[15px] font-bold">{{peso line_total}}</span>
+        </div>
+      {{/each}}
+      <div class="flex flex-col gap-2 border-t border-line pt-3.5 text-[15px]">
+        <div class="flex justify-between"><span class="text-ink-soft">Subtotal</span><span>{{peso order.subtotal}}</span></div>
+        <div class="flex justify-between"><span class="text-ink-soft">Delivery fee</span><span>{{peso order.shipping_fee}}</span></div>
+        <div class="flex justify-between text-lg font-extrabold"><span>Total</span><span class="text-brand">{{peso order.total_amount}}</span></div>
+      </div>
+    </section>
+
+    <aside class="flex min-w-0 flex-1 basis-80 flex-col gap-4">
+      <section class="card flex flex-col gap-2 p-6">
+        <h2 class="mb-1 text-lg font-extrabold">Delivery to</h2>
+        <span class="text-[15px] font-semibold">{{customer.first_name}} {{customer.last_name}}</span>
+        <span class="text-[15px] leading-normal text-ink-soft">{{order.delivery_address}}</span>
+      </section>
+      {{#unless stopped}}
+      <section class="card flex flex-col gap-2.5 p-6">
+        <h2 class="text-lg font-extrabold">Need to cancel?</h2>
+        {{#if canCancel}}
+          <p class="text-sm leading-relaxed text-ink-soft">You can cancel while your order is still pending. The items go back on the shelf{{#if (eq order.payment_method "gcash")}} and your GCash payment is refunded{{/if}}.</p>
+          <form action="/orders/{{order.order_code}}/cancel" method="POST" onsubmit="return confirm('Cancel order {{order.order_code}}?')">
+            <button type="submit" class="btn-danger w-full">Cancel order</button>
+          </form>
+        {{else}}
+          <p class="text-sm leading-relaxed text-ink-soft">Orders can be cancelled only while pending. This one is already {{statusLower order.order_status}}, so please contact the store.</p>
+          <button type="button" disabled class="btn w-full border border-line-strong bg-[#F3E9DF] text-ink-muted">Cancel order</button>
+        {{/if}}
+      </section>
+      {{/unless}}
+      <a href="/orders" class="text-[15px] font-semibold">← All my orders</a>
+    </aside>
+  </div>
+</main>
+
+{{> footer}}

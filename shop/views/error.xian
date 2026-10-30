@@ -1,0 +1,15 @@
+{{> head}}
+{{> shop-nav}}
+
+<main class="mx-auto flex w-full max-w-xl flex-col gap-5 px-6 pb-14 pt-14">
+  <section class="card flex flex-col items-center gap-4 p-10 text-center">
+    <span class="flex h-14 w-14 items-center justify-center rounded-full bg-peach text-brand-dark">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+    </span>
+    <h1 class="text-[26px] font-extrabold">{{heading}}</h1>
+    <p class="text-[15px] leading-relaxed text-ink-soft">{{message}}</p>
+    <a href="/" class="btn-primary">Back to the shop</a>
+  </section>
+</main>
+
+{{> footer}}
