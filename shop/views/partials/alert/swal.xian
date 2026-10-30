@@ -1,0 +1,42 @@
+{{!-- views/partials/alert — flash messages and confirmations with SweetAlert2 (package diagram, Figure 4).
+     Success → small toast top-right. Error → dialog. <form data-confirm="Question?"> → asks before submitting. --}}
+<script src="/vendor/sweetalert2/sweetalert2.all.min.js"></script>
+<script type="application/json" id="flash-data">{{{flashJson success_msg error_msg}}}</script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById("flash-data").textContent);
+  var colors = { confirmButtonColor: "#C2410C", cancelButtonColor: "#6B4F3F" };
+  function esc(s) { var d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+  if (data.error.length) {
+    Swal.fire(Object.assign({
+      icon: "error",
+      title: data.error.length === 1 ? data.error[0] : "Please check the following",
+      html: data.error.length === 1 ? "" : "<ul style='text-align:left;margin:0;padding-left:1.2em'>" +
+        data.error.map(function (m) { return "<li>" + esc(m) + "</li>"; }).join("") + "</ul>",
+      confirmButtonText: "OK"
+    }, colors));
+  } else if (data.success.length) {
+    Swal.fire({ toast: true, position: "top-end", icon: "success", title: data.success.join(" "),
+                showConfirmButton: false, timer: 4000, timerProgressBar: true });
+  }
+
+  document.querySelectorAll("form[data-confirm]").forEach(function (form) {
+    form.addEventListener("submit", function (e) {
+      if (form.dataset.confirmed) return;
+      e.preventDefault();
+      Swal.fire(Object.assign({
+        icon: "warning",
+        title: form.dataset.confirm,
+        text: form.dataset.confirmText || "",
+        showCancelButton: true,
+        confirmButtonText: form.dataset.confirmButton || "Yes",
+        cancelButtonText: "No, go back",
+        reverseButtons: true
+      }, colors)).then(function (r) {
+        if (r.isConfirmed) { form.dataset.confirmed = "1"; form.submit(); }
+      });
+    });
+  });
+})();
+</script>

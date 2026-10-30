@@ -2,7 +2,6 @@
 {{> shop-nav}}
 
 <main class="mx-auto flex w-full max-w-md flex-col gap-5 px-6 pb-14 pt-10">
-  {{> flash}}
   <form action="/login" method="POST" class="card flex flex-col gap-4 p-8">
     <div class="flex flex-col gap-1">
       <h1 class="text-[28px] font-extrabold tracking-tight">Log in</h1>
@@ -22,4 +21,5 @@
   <p class="text-center text-sm text-ink-muted">MindaFresh staff? <a href="/admin/login" class="font-semibold">Staff log in</a></p>
 </main>
 
+{{> alert/swal}}
 {{> footer}}

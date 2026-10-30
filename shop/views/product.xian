@@ -2,7 +2,6 @@
 {{> shop-nav}}
 
 <main class="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 pb-14 pt-6">
-  {{> flash}}
   <nav aria-label="Breadcrumb" class="flex flex-wrap gap-2 text-sm text-ink-muted">
     <a href="/" class="font-semibold">Shop</a><span aria-hidden="true">/</span>
     <a href="/?category={{product.category_code}}#products" class="font-semibold">{{product.category}}</a><span aria-hidden="true">/</span>
@@ -79,4 +78,5 @@
   {{/if}}
 </main>
 
+{{> alert/swal}}
 {{> footer}}

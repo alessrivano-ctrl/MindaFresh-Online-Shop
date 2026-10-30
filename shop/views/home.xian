@@ -2,7 +2,6 @@
 {{> shop-nav}}
 
 <main class="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 pb-14 pt-7">
-  {{> flash}}
 
   {{#unless filtered}}
   <section class="flex flex-wrap items-center justify-between gap-6 rounded-3xl bg-brand p-10 text-white">
@@ -63,4 +62,5 @@
   </section>
 </main>
 
+{{> alert/swal}}
 {{> footer}}

@@ -32,4 +32,8 @@ export function registerViewHelpers() {
   hbs.registerHelper("payStatus", (s) => PAYMENT_STATUS[s] ?? s);
   hbs.registerHelper("tint", (category) => CATEGORY_TINT[category] ?? "#EFE9DF");
   hbs.registerHelper("plural", (n, one, many) => (Number(n) === 1 ? one : many));
+  // Flash messages as JSON for the SweetAlert2 partial ("<" escaped so the text can never close the script tag)
+  hbs.registerHelper("flashJson", (success, error) =>
+    JSON.stringify({ success: [].concat(success || []), error: [].concat(error || []) }).replace(/</g, "\\u003c"));
+  hbs.registerHelper("isoDate", (d) => (d ? new Date(d).toISOString().slice(0, 10) : ""));
 }

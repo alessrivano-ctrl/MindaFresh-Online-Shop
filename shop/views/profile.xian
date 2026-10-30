@@ -1,0 +1,60 @@
+{{> head}}
+{{> shop-nav}}
+
+<main class="mx-auto flex w-full max-w-3xl flex-col gap-5 px-6 pb-14 pt-8">
+  <div class="flex flex-col gap-1">
+    <h1 class="text-[32px] font-extrabold tracking-tight">My profile</h1>
+    <p class="text-[15px] text-ink-muted">{{form.customer_code}} · {{form.email}}</p>
+  </div>
+
+  <form action="/profile" method="POST" class="card flex flex-col gap-4 p-7">
+    <h2 class="text-xl font-extrabold">Personal details</h2>
+    <div class="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3.5">
+      <div class="flex flex-col gap-1.5">
+        <label for="first_name" class="label">First name</label>
+        <input id="first_name" name="first_name" value="{{form.first_name}}" autocomplete="given-name" required maxlength="50" class="field">
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label for="last_name" class="label">Last name</label>
+        <input id="last_name" name="last_name" value="{{form.last_name}}" autocomplete="family-name" required maxlength="50" class="field">
+      </div>
+    </div>
+    <div class="flex flex-col gap-1.5">
+      <label for="phone" class="label">Mobile number</label>
+      <input id="phone" name="phone" type="tel" value="{{form.phone}}" placeholder="09171234567" pattern="09[0-9]{9}" title="11 digits, starting with 09" class="field">
+    </div>
+    <div class="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3.5">
+      <div class="flex flex-col gap-1.5">
+        <label for="address" class="label">Delivery address</label>
+        <input id="address" name="address" value="{{form.address}}" placeholder="House no., street, barangay" maxlength="200" class="field">
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label for="city" class="label">City</label>
+        <input id="city" name="city" value="{{form.city}}" maxlength="100" class="field">
+      </div>
+    </div>
+    <button type="submit" class="btn-primary self-start">Save profile</button>
+  </form>
+
+  <form action="/profile/password" method="POST" class="card flex flex-col gap-4 p-7">
+    <h2 class="text-xl font-extrabold">Change password</h2>
+    <div class="flex flex-col gap-1.5">
+      <label for="current_password" class="label">Current password</label>
+      <input id="current_password" name="current_password" type="password" autocomplete="current-password" required class="field">
+    </div>
+    <div class="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3.5">
+      <div class="flex flex-col gap-1.5">
+        <label for="new_password" class="label">New password</label>
+        <input id="new_password" name="new_password" type="password" autocomplete="new-password" required minlength="8" class="field">
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label for="confirm_password" class="label">Confirm new password</label>
+        <input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" required minlength="8" class="field">
+      </div>
+    </div>
+    <button type="submit" class="btn-outline self-start">Change password</button>
+  </form>
+</main>
+
+{{> alert/swal}}
+{{> footer}}

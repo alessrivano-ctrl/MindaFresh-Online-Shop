@@ -1,30 +1,10 @@
-// Customer register / login / logout. Customers log in only to the Shop, against the customers table
-// (email + bcrypt password). They are kept in req.session.customer, separate from staff (req.session.user).
-import bcrypt from "bcrypt";
-import { Customer } from "../models/index.js";
+// authController — customer accounts (customers table, CustomerService) and staff login (users ⨝ employees, shared AuthService)
+// Customers live in req.session.customer, staff in req.session.user: two separate logins.
+import * as customerService from "../services/customerService.js";
+import { login as staffLoginService } from "../services/authService.js";
+import { AppError } from "../utils/appError.js";
 
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-export const loginPage = (req, res) => {
-  if (req.session.customer) return res.redirect("/");
-  res.render("login", { title: "Log in" });
-};
-
-export const registerPage = (req, res) => {
-  if (req.session.customer) return res.redirect("/");
-  res.render("register", { title: "Create account", form: {} });
-};
-
-function startSession(req, customer) {
-  req.session.customer = {
-    id: customer.id,
-    customer_code: customer.customer_code,
-    first_name: customer.first_name,
-    last_name: customer.last_name,
-    email: customer.email,
-    initials: `${customer.first_name[0] ?? ""}${customer.last_name[0] ?? ""}`.toUpperCase()
-  };
-}
+const SHOP_STAFF_ROLES = ["admin", "accountant"];
 
 function goBack(req, res) {
   const to = req.session.returnTo || "/";
@@ -32,67 +12,110 @@ function goBack(req, res) {
   res.redirect(to);
 }
 
-export const loginCustomer = async (req, res, next) => {
+// --- Customers ---------------------------------------------------------------------
+
+export const showLogin = (req, res) => {
+  if (req.session.customer) return res.redirect("/");
+  res.render("login", { title: "Log in" });
+};
+
+export const login = async (req, res, next) => {
   try {
-    const email = (req.body.email || "").trim().toLowerCase();
-    const password = req.body.password || "";
-    const customer = await Customer.findOne({ where: { email } });
-    if (!customer || !(await bcrypt.compare(password, customer.password))) {
-      req.flash("error_msg", "Wrong email or password.");
-      return res.redirect("/login");
-    }
-    if (customer.status !== "active") {
-      req.flash("error_msg", "This account is disabled. Please contact the store.");
-      return res.redirect("/login");
-    }
-    startSession(req, customer);
+    const customer = await customerService.login(req.body.email, req.body.password);
+    req.session.customer = customerService.toSession(customer);
     req.flash("success_msg", `Welcome back, ${customer.first_name}!`);
     goBack(req, res);
   } catch (err) {
-    next(err);
+    if (!(err instanceof AppError)) return next(err);
+    req.flash("error_msg", err.message);
+    res.redirect("/login");
   }
 };
 
-export const registerCustomer = async (req, res, next) => {
+export const showRegister = (req, res) => {
+  if (req.session.customer) return res.redirect("/");
+  res.render("register", { title: "Create account", form: { city: "Calapan City" } });
+};
+
+export const register = async (req, res, next) => {
   try {
-    const form = {
-      first_name: (req.body.first_name || "").trim(),
-      last_name: (req.body.last_name || "").trim(),
-      email: (req.body.email || "").trim().toLowerCase(),
-      phone: (req.body.phone || "").trim(),
-      address: (req.body.address || "").trim(),
-      city: (req.body.city || "Calapan City").trim()
-    };
-    const password = req.body.password || "";
-    const errors = [];
-    if (!form.first_name || !form.last_name) errors.push("Please enter your first and last name.");
-    if (!EMAIL.test(form.email)) errors.push("Please enter a valid email address.");
-    if (password.length < 8) errors.push("Your password needs at least 8 characters.");
-    if (password !== req.body.confirm_password) errors.push("The two passwords do not match.");
-    if (!errors.length && (await Customer.findOne({ where: { email: form.email } })))
-      errors.push("An account with this email already exists. Please log in.");
-
-    if (errors.length) {
-      return res.status(400).render("register", { title: "Create account", form, error_msg: errors });
-    }
-
-    const customer = await Customer.create({
-      ...form,
-      phone: form.phone || null,
-      address: form.address || null,
-      password: await bcrypt.hash(password, 10),
-      status: "active"
-    });
-    startSession(req, customer);
+    const customer = await customerService.register(req.body);
+    req.session.customer = customerService.toSession(customer);
     req.flash("success_msg", `Welcome to MindaFresh, ${customer.first_name}! Your account is ${customer.customer_code}.`);
     goBack(req, res);
+  } catch (err) {
+    if (!(err instanceof AppError)) return next(err);
+    res.status(400).render("register", { title: "Create account", form: err.form || req.body, error_msg: err.details || [err.message] });
+  }
+};
+
+export const logout = (req, res) => {
+  delete req.session.customer;
+  delete req.session.returnTo;
+  res.redirect("/");
+};
+
+// Use case "Manage profile"
+export const showProfile = async (req, res, next) => {
+  try {
+    const profile = await customerService.getProfile(req.session.customer.id);
+    res.render("profile", { title: "My profile", form: profile });
   } catch (err) {
     next(err);
   }
 };
 
-export const logoutCustomer = (req, res) => {
-  delete req.session.customer;
-  delete req.session.returnTo;
-  res.redirect("/");
+export const updateProfile = async (req, res, next) => {
+  try {
+    const c = await customerService.updateProfile(req.session.customer.id, req.body);
+    req.session.customer = customerService.toSession(c);
+    req.flash("success_msg", "Your profile was saved.");
+  } catch (err) {
+    if (!(err instanceof AppError)) return next(err);
+    req.flash("error_msg", err.message);
+  }
+  res.redirect("/profile");
+};
+
+export const changePassword = async (req, res, next) => {
+  try {
+    await customerService.changePassword(req.session.customer.id, req.body);
+    req.flash("success_msg", "Your password was changed.");
+  } catch (err) {
+    if (!(err instanceof AppError)) return next(err);
+    req.flash("error_msg", err.message);
+  }
+  res.redirect("/profile");
+};
+
+// --- Staff (Admin, Accountant) -------------------------------------------------------
+
+export const showStaffLogin = (req, res) => {
+  if (req.session.user && SHOP_STAFF_ROLES.includes(req.session.user.role)) {
+    // Already logged in (e.g. sent here by requireRole): keep the message for the next page
+    res.locals.error_msg.forEach((m) => req.flash("error_msg", m));
+    return res.redirect("/admin/orders");
+  }
+  res.render("admin-login", { title: "Staff log in" });
+};
+
+export const staffLogin = async (req, res, next) => {
+  try {
+    const user = await staffLoginService((req.body.username || "").trim(), req.body.password || "");
+    if (!SHOP_STAFF_ROLES.includes(user.role)) {
+      req.flash("error_msg", "Your account cannot use the Shop admin. Only admin and accountant accounts can.");
+      return res.redirect("/admin/login");
+    }
+    req.session.user = user;
+    res.redirect("/admin/orders");
+  } catch (err) {
+    if (!(err instanceof AppError)) return next(err);
+    req.flash("error_msg", err.message);
+    res.redirect("/admin/login");
+  }
+};
+
+export const staffLogout = (req, res) => {
+  delete req.session.user;
+  res.redirect("/admin/login");
 };

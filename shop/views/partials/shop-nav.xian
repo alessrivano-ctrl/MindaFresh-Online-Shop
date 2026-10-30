@@ -27,10 +27,10 @@
         <span class="rounded-full bg-ink px-2 py-0.5 text-xs font-bold text-white">{{cartCount}}</span>
       </a>
       {{#if customer}}
-        <span class="flex min-h-[44px] items-center gap-2 px-2">
+        <a href="/profile" class="flex min-h-[44px] items-center gap-2 rounded-lg px-2 hover:bg-peach-soft" title="My profile">
           <span class="flex h-8 w-8 items-center justify-center rounded-full bg-peach text-xs font-bold text-brand-dark">{{customer.initials}}</span>
           {{customer.first_name}}
-        </span>
+        </a>
         <a href="/logout" class="flex min-h-[44px] items-center rounded-lg px-3 text-ink-muted hover:bg-peach-soft">Log out</a>
       {{else}}
         <a href="/login" class="flex min-h-[44px] items-center rounded-lg px-3 hover:bg-peach-soft">Log in</a>

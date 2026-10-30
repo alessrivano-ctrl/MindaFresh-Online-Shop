@@ -16,7 +16,6 @@
 
 <main class="mx-auto flex w-full max-w-6xl flex-col gap-5 px-6 pb-14 pt-7">
   <h1 class="text-[32px] font-extrabold tracking-tight">Checkout</h1>
-  {{> flash}}
 
   <form action="/checkout" method="POST" class="flex flex-wrap items-start gap-6">
     <div class="flex min-w-0 flex-[999_1_560px] flex-col gap-5">
@@ -80,4 +79,5 @@
   </form>
 </main>
 
+{{> alert/swal}}
 {{> footer}}

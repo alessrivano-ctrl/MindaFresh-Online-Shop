@@ -6,7 +6,6 @@
 
   <main class="flex min-w-0 flex-1 flex-col gap-5">
     <h1 class="text-[28px] font-extrabold tracking-tight">Customers</h1>
-    {{> flash}}
     <div class="card overflow-x-auto rounded-[18px]">
       <table class="w-full min-w-[760px] border-collapse text-sm">
         <thead>
@@ -19,6 +18,7 @@
             <th scope="col" class="px-4 py-3 text-right font-bold">Orders</th>
             <th scope="col" class="px-4 py-3 text-right font-bold">Delivered total</th>
             <th scope="col" class="px-4 py-3 font-bold">Status</th>
+            <th scope="col" class="px-4 py-3"><span class="sr-only">Action</span></th>
           </tr>
         </thead>
         <tbody>
@@ -31,10 +31,23 @@
             <td class="px-4 py-3.5 text-ink-soft">{{city}}</td>
             <td class="px-4 py-3.5 text-right">{{orders}}</td>
             <td class="px-4 py-3.5 text-right font-bold">{{peso spent}}</td>
-            <td class="px-4 py-3.5"><span class="badge {{#if (eq status "active")}}bg-leaf-bg text-[#2F4A12]{{else}}bg-danger-bg text-[#8A2C17]{{/if}}">{{status}}</span></td>
+            <td class="px-4 py-3.5"><span class="badge {{#if (eq status "active")}}bg-leaf-bg text-[#2F4A12]{{else}}bg-danger-bg text-[#8A2C17]{{/if}}">{{#if (eq status "active")}}Active{{else}}Disabled{{/if}}</span></td>
+            <td class="px-4 py-3.5 text-right">
+              {{#if (eq status "active")}}
+                <form action="/admin/customers/{{customer_code}}/status" method="POST" data-confirm="Disable {{name}}?" data-confirm-text="They will be logged out and cannot log in or order until you enable the account again." data-confirm-button="Yes, disable">
+                  <input type="hidden" name="status" value="disabled">
+                  <button type="submit" class="btn-danger min-h-[36px] px-3.5 text-sm">Disable</button>
+                </form>
+              {{else}}
+                <form action="/admin/customers/{{customer_code}}/status" method="POST">
+                  <input type="hidden" name="status" value="active">
+                  <button type="submit" class="btn-outline min-h-[36px] px-3.5 text-sm">Enable</button>
+                </form>
+              {{/if}}
+            </td>
           </tr>
           {{else}}
-          <tr><td colspan="8" class="px-4 py-10 text-center text-ink-muted">No customers yet.</td></tr>
+          <tr><td colspan="9" class="px-4 py-10 text-center text-ink-muted">No customers yet.</td></tr>
           {{/each}}
         </tbody>
       </table>
@@ -42,4 +55,5 @@
   </main>
 </div>
 
+{{> alert/swal}}
 {{> footer}}

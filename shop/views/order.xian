@@ -2,7 +2,6 @@
 {{> shop-nav}}
 
 <main class="mx-auto flex w-full max-w-6xl flex-col gap-5 px-6 pb-14 pt-7">
-  {{> flash}}
 
   {{#with order}}
   <div class="flex flex-wrap items-end justify-between gap-3">
@@ -68,7 +67,7 @@
         <h2 class="text-lg font-extrabold">Need to cancel?</h2>
         {{#if canCancel}}
           <p class="text-sm leading-relaxed text-ink-soft">You can cancel while your order is still pending. The items go back on the shelf{{#if (eq order.payment_method "gcash")}} and your GCash payment is refunded{{/if}}.</p>
-          <form action="/orders/{{order.order_code}}/cancel" method="POST" onsubmit="return confirm('Cancel order {{order.order_code}}?')">
+          <form action="/orders/{{order.order_code}}/cancel" method="POST" data-confirm="Cancel order {{order.order_code}}?" data-confirm-text="The items go back on the shelf{{#if (eq order.payment_method "gcash")}} and your GCash payment is refunded{{/if}}." data-confirm-button="Yes, cancel it">
             <button type="submit" class="btn-danger w-full">Cancel order</button>
           </form>
         {{else}}
@@ -82,4 +81,5 @@
   </div>
 </main>
 
+{{> alert/swal}}
 {{> footer}}

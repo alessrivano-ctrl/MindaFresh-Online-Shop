@@ -9,7 +9,6 @@
 </header>
 
 <main class="mx-auto flex w-full max-w-md flex-col gap-5 px-6 pb-14 pt-12">
-  {{> flash}}
   <form action="/admin/login" method="POST" class="card flex flex-col gap-4 p-8">
     <div class="flex flex-col gap-1">
       <h1 class="text-[28px] font-extrabold tracking-tight">Staff log in</h1>
@@ -28,4 +27,5 @@
   <p class="text-center text-sm text-ink-muted"><a href="/" class="font-semibold">← Back to the shop</a></p>
 </main>
 
+{{> alert/swal}}
 {{> footer}}

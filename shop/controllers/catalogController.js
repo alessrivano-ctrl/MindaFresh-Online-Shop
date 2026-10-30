@@ -1,13 +1,13 @@
-// Storefront: product list and product details.
+// catalogController — browse and search products (use cases "Browse products", "Search", "View product details")
 // Reads POS's tables directly (products ⨝ stock_levels), only is_online = 1 and status = 'active'.
 // cost_price is never sent to a view.
 import { Op } from "sequelize";
 import { Product, Category, StockLevel } from "../models/index.js";
 
 const LOW_STOCK = 10;
+const onlineWhere = { is_online: true, status: "active" };
 
-// Turn a Product row into what a view needs (no cost_price)
-export function toCard(p) {
+function toCard(p) {
   const stock = p.StockLevel?.quantity_on_hand ?? 0;
   return {
     product_code: p.product_code,
@@ -24,9 +24,8 @@ export function toCard(p) {
   };
 }
 
-const onlineWhere = { is_online: true, status: "active" };
-
-export const homePage = async (req, res, next) => {
+// GET /  — product list with category filter and search
+export const index = async (req, res, next) => {
   try {
     const q = (req.query.q || "").trim();
     const categoryCode = req.query.category || "";
@@ -36,7 +35,6 @@ export const homePage = async (req, res, next) => {
     const where = { ...onlineWhere };
     if (q) where.name = { [Op.like]: `%${q}%` };
     if (active) where.category_id = active.id;
-
     const products = await Product.findAll({ where, include: [Category, StockLevel], order: [["name", "ASC"]] });
 
     res.render("home", {
@@ -53,29 +51,20 @@ export const homePage = async (req, res, next) => {
   }
 };
 
-export const productPage = async (req, res, next) => {
+// GET /products/:code — product details
+export const show = async (req, res, next) => {
   try {
-    const product = await Product.findOne({
-      where: { ...onlineWhere, product_code: req.params.code },
-      include: [Category, StockLevel]
-    });
+    const product = await Product.findOne({ where: { ...onlineWhere, product_code: req.params.code }, include: [Category, StockLevel] });
     if (!product) {
       return res.status(404).render("error", { title: "Product not found", heading: "Product not found",
         message: "This product is not sold online right now." });
     }
     const related = await Product.findAll({
       where: { ...onlineWhere, category_id: product.category_id, id: { [Op.ne]: product.id } },
-      include: [Category, StockLevel],
-      limit: 4,
-      order: [["name", "ASC"]]
+      include: [Category, StockLevel], limit: 4, order: [["name", "ASC"]]
     });
     const card = toCard(product);
-    res.render("product", {
-      title: card.name,
-      product: card,
-      maxQty: card.stock,
-      related: related.map(toCard)
-    });
+    res.render("product", { title: card.name, product: card, related: related.map(toCard) });
   } catch (err) {
     next(err);
   }

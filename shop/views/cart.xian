@@ -6,7 +6,6 @@
     <h1 class="text-[32px] font-extrabold tracking-tight">Your cart</h1>
     <a href="/" class="text-[15px] font-semibold">← Continue shopping</a>
   </div>
-  {{> flash}}
 
   {{#if cart.items.length}}
   <div class="flex flex-wrap items-start gap-6">
@@ -61,4 +60,5 @@
   {{/if}}
 </main>
 
+{{> alert/swal}}
 {{> footer}}

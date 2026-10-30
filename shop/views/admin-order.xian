@@ -6,7 +6,6 @@
 
   <main class="flex min-w-0 flex-1 flex-col gap-5">
     <a href="/admin/orders" class="text-[15px] font-semibold">← All orders</a>
-    {{> flash}}
 
     {{#with order}}
     <div class="flex flex-wrap items-end justify-between gap-3">
@@ -27,17 +26,17 @@
       </p>
       <div class="flex flex-wrap gap-2.5">
         {{#if nextLabel}}
-          <form action="/admin/orders/{{order.order_code}}/advance" method="POST">
+          <form action="/admin/orders/{{order.order_code}}/status" method="POST">
             <button type="submit" class="btn-primary">{{nextLabel}}</button>
           </form>
         {{/if}}
         {{#if canCancel}}
-          <form action="/admin/orders/{{order.order_code}}/cancel" method="POST" onsubmit="return confirm('Cancel {{order.order_code}} and return its stock?')">
+          <form action="/admin/orders/{{order.order_code}}/cancel" method="POST" data-confirm="Cancel {{order.order_code}}?" data-confirm-text="Its stock goes back on the shelf{{#if (eq order.payment_status "paid")}} and the payment is marked refunded{{/if}}." data-confirm-button="Yes, cancel it">
             <button type="submit" class="btn-danger">Cancel order</button>
           </form>
         {{/if}}
         {{#if canReturn}}
-          <form action="/admin/orders/{{order.order_code}}/return" method="POST" onsubmit="return confirm('Mark {{order.order_code}} returned, refund it and put the stock back?')">
+          <form action="/admin/orders/{{order.order_code}}/return" method="POST" data-confirm="Mark {{order.order_code}} returned?" data-confirm-text="The payment is marked refunded and the stock goes back on the shelf." data-confirm-button="Yes, mark returned">
             <button type="submit" class="btn-danger">Mark returned</button>
           </form>
         {{/if}}
@@ -80,9 +79,9 @@
       <aside class="flex min-w-0 flex-1 basis-72 flex-col gap-4">
         <section class="card flex flex-col gap-1.5 p-5 text-[15px]">
           <h2 class="mb-1 text-lg font-extrabold">Customer</h2>
-          <span class="font-semibold">{{order.customerName}} <span class="font-normal text-ink-muted">({{order.Customer.customer_code}})</span></span>
-          <span class="text-ink-soft">{{order.Customer.email}}</span>
-          {{#if order.Customer.phone}}<span class="text-ink-soft">{{order.Customer.phone}}</span>{{/if}}
+          <span class="font-semibold">{{order.customer.name}} <span class="font-normal text-ink-muted">({{order.customer.customer_code}})</span></span>
+          <span class="text-ink-soft">{{order.customer.email}}</span>
+          {{#if order.customer.phone}}<span class="text-ink-soft">{{order.customer.phone}}</span>{{/if}}
         </section>
         <section class="card flex flex-col gap-1.5 p-5 text-[15px]">
           <h2 class="mb-1 text-lg font-extrabold">Delivery to</h2>
@@ -98,4 +97,5 @@
   </main>
 </div>
 
+{{> alert/swal}}
 {{> footer}}

@@ -1,0 +1,109 @@
+{{> head}}
+<div class="print:hidden">{{> admin-nav}}</div>
+
+<div class="mx-auto flex w-full max-w-[1440px] flex-wrap gap-6 p-6 md:flex-nowrap">
+  {{> admin-side}}
+
+  <main class="flex min-w-0 flex-1 flex-col gap-5">
+    <div class="flex flex-wrap items-end justify-between gap-3">
+      <div class="flex flex-col gap-1">
+        <h1 class="text-[28px] font-extrabold tracking-tight">Sales report</h1>
+        <p class="text-sm text-ink-muted">Online orders delivered from <strong class="text-ink">{{report.from}}</strong> to <strong class="text-ink">{{report.to}}</strong>. A sale counts on its delivery date, the same date Accounting posts it.</p>
+      </div>
+      <form action="/admin/reports/sales" method="GET" class="flex flex-wrap items-end gap-2 print:hidden">
+        <div class="flex flex-col gap-1">
+          <label for="from" class="text-xs font-bold text-ink-muted">From</label>
+          <input id="from" name="from" type="date" value="{{report.from}}" class="field min-h-[40px] w-40 text-sm">
+        </div>
+        <div class="flex flex-col gap-1">
+          <label for="to" class="text-xs font-bold text-ink-muted">To</label>
+          <input id="to" name="to" type="date" value="{{report.to}}" class="field min-h-[40px] w-40 text-sm">
+        </div>
+        <button type="submit" class="btn-dark min-h-[40px] text-sm">Show</button>
+        <button type="button" onclick="window.print()" class="btn-outline min-h-[40px] text-sm">Print</button>
+      </form>
+    </div>
+
+    <section aria-label="Totals" class="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3">
+      <div class="card flex flex-col gap-1 p-4">
+        <span class="text-[13px] font-semibold text-ink-muted">Total sales</span>
+        <span class="text-[26px] font-extrabold text-brand">{{peso report.totalSales}}</span>
+      </div>
+      <div class="card flex flex-col gap-1 p-4">
+        <span class="text-[13px] font-semibold text-ink-muted">Delivered orders</span>
+        <span class="text-[26px] font-extrabold">{{report.deliveredOrders}}</span>
+      </div>
+      <div class="card flex flex-col gap-1 p-4">
+        <span class="text-[13px] font-semibold text-ink-muted">Product sales</span>
+        <span class="text-[26px] font-extrabold">{{peso report.productSales}}</span>
+      </div>
+      <div class="card flex flex-col gap-1 p-4">
+        <span class="text-[13px] font-semibold text-ink-muted">Delivery fees</span>
+        <span class="text-[26px] font-extrabold">{{peso report.deliveryFees}}</span>
+      </div>
+      <div class="card flex flex-col gap-1 p-4">
+        <span class="text-[13px] font-semibold text-ink-muted">Returned ({{report.returnedOrders}})</span>
+        <span class="text-[26px] font-extrabold {{#if report.returnedOrders}}text-danger{{/if}}">{{peso report.refunds}}</span>
+      </div>
+    </section>
+
+    <div class="flex flex-wrap items-start gap-5">
+      <section class="card min-w-0 flex-[2_1_420px] overflow-x-auto p-5">
+        <h2 class="mb-3 text-lg font-extrabold">Sales by day</h2>
+        <table class="w-full min-w-[360px] text-sm">
+          <thead><tr class="text-left text-ink-muted">
+            <th scope="col" class="pb-2 font-semibold">Date</th>
+            <th scope="col" class="pb-2 text-right font-semibold">Orders</th>
+            <th scope="col" class="pb-2 text-right font-semibold">Sales</th>
+          </tr></thead>
+          <tbody>
+            {{#each report.days}}
+            <tr class="border-t border-[#F6EADD]"><td class="py-2.5">{{date}}</td><td class="py-2.5 text-right">{{orders}}</td><td class="py-2.5 text-right font-bold">{{peso sales}}</td></tr>
+            {{else}}
+            <tr><td colspan="3" class="py-6 text-center text-ink-muted">No delivered orders in these dates.</td></tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </section>
+
+      <section class="card min-w-0 flex-[1_1_260px] p-5">
+        <h2 class="mb-3 text-lg font-extrabold">By payment method</h2>
+        <table class="w-full text-sm">
+          <tbody>
+            {{#each report.methods}}
+            <tr class="border-t border-[#F6EADD] first:border-t-0"><td class="py-2.5">{{payMethod method}}</td><td class="py-2.5 text-right">{{orders}} {{plural orders "order" "orders"}}</td><td class="py-2.5 text-right font-bold">{{peso sales}}</td></tr>
+            {{/each}}
+          </tbody>
+        </table>
+        <h2 class="mb-2 mt-5 text-lg font-extrabold">Orders placed, by status</h2>
+        <div class="flex flex-wrap gap-1.5">
+          {{#each report.placedByStatus}}
+            <span class="badge {{statusBadge status}}">{{statusLabel status}} · {{n}}</span>
+          {{/each}}
+        </div>
+      </section>
+    </div>
+
+    <section class="card overflow-x-auto p-5">
+      <h2 class="mb-3 text-lg font-extrabold">Products sold</h2>
+      <table class="w-full min-w-[420px] text-sm">
+        <thead><tr class="text-left text-ink-muted">
+          <th scope="col" class="pb-2 font-semibold">Product</th>
+          <th scope="col" class="pb-2 text-right font-semibold">Quantity</th>
+          <th scope="col" class="pb-2 text-right font-semibold">Sales</th>
+        </tr></thead>
+        <tbody>
+          {{#each report.products}}
+          <tr class="border-t border-[#F6EADD]"><td class="py-2.5 font-semibold">{{name}}</td><td class="py-2.5 text-right">{{quantity}}</td><td class="py-2.5 text-right font-bold">{{peso sales}}</td></tr>
+          {{else}}
+          <tr><td colspan="3" class="py-6 text-center text-ink-muted">No products sold in these dates.</td></tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </section>
+    <p class="text-xs text-ink-muted">Printed {{datetime printedOn}} by {{staff.full_name}} ({{staff.employee_code}}).</p>
+  </main>
+</div>
+
+{{> alert/swal}}
+{{> footer}}

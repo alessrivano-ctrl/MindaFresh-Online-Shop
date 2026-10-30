@@ -34,7 +34,8 @@ import hbs from "hbs";
 import { fileURLToPath, pathToFileURL } from "url";
 import { dirname } from "path";
 import router from "./routes/index.js";
-import { sequelize, CartItem } from "./models/index.js";
+import { sequelize } from "./models/index.js";
+import { countItems } from "./services/cartService.js";
 import { registerViewHelpers } from "./utils/viewHelpers.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -46,6 +47,8 @@ const PORT = process.env.PORT || 3001;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
+// SweetAlert2 served from node_modules, so alerts work with no internet
+app.use("/vendor/sweetalert2", express.static(path.join(__dirname, "node_modules/sweetalert2/dist")));
 
 app.use(session({
   secret: process.env.SESSION_SECRET || "shop-session-secret",
@@ -69,11 +72,19 @@ app.engine("xian", async (filePath, options, callback) => {
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "xian");
 
-// Partials (head, footer, shop-nav, ...) and helpers (peso, datetime, statusBadge, ...)
+// Partials (head, footer, shop-nav, alert/swal, ...) and helpers (peso, datetime, statusBadge, ...)
+// A partial in a sub-folder is named by its path: views/partials/alert/swal.xian → {{> alert/swal}}
 const partialsDir = path.join(__dirname, "views/partials");
-for (const file of fs.readdirSync(partialsDir).filter((f) => f.endsWith(".xian"))) {
-  hbs.registerPartial(file.replace(".xian", ""), fs.readFileSync(path.join(partialsDir, file), "utf8"));
-}
+(function registerPartials(dir) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) registerPartials(full);
+    else if (entry.name.endsWith(".xian")) {
+      const name = path.relative(partialsDir, full).replace(/\\/g, "/").replace(/\.xian$/, "");
+      hbs.registerPartial(name, fs.readFileSync(full, "utf8"));
+    }
+  }
+})(partialsDir);
 registerViewHelpers();
 
 // Values every page can use: flash messages, who is logged in, cart count
@@ -87,7 +98,7 @@ app.use(async (req, res, next) => {
   res.locals.cartCount = 0;
   try {
     if (req.session.customer) {
-      res.locals.cartCount = (await CartItem.sum("quantity", { where: { customer_id: req.session.customer.id } })) || 0;
+      res.locals.cartCount = await countItems(req.session.customer.id);
     }
     next();
   } catch (err) {
