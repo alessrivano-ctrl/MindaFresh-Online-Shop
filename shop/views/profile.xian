@@ -56,5 +56,5 @@
   </form>
 </main>
 
-{{> alert/swal}}
+{{> alert/alert}}
 {{> footer}}

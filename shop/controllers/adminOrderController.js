@@ -36,14 +36,14 @@ export const show = async (req, res, next) => {
       return res.redirect("/admin/orders");
     }
     const isAdmin = req.session.user.role === "admin";
-    const nextStatus = orderService.NEXT_STATUS[order.order_status];
-    res.render("admin-order", {
+    const nextStatus = orderService.nextStep(order.order_status);
+    res.render("admin-order-detail", {
       title: `Order ${order.order_code}`,
       nav: "orders",
       order,
       isAdmin,
       nextLabel: isAdmin && nextStatus ? NEXT_LABEL[nextStatus] : null,
-      canCancel: isAdmin && orderService.ADMIN_CAN_CANCEL.includes(order.order_status),
+      canCancel: isAdmin && orderService.CANCEL_RULES.admin.includes(order.order_status),
       canReturn: isAdmin && order.order_status === "delivered"
     });
   } catch (err) {
@@ -64,11 +64,11 @@ const act = (action, done) => async (req, res, next) => {
 };
 
 // POST /admin/orders/:code/status — pending → confirmed → out_for_delivery → delivered
-export const updateStatus = act((code) => orderService.updateStatus(code),
+export const updateStatus = act((code) => orderService.advanceStatus(code),
   (o) => `${o.order_code} is now ${ORDER_STATUS[o.order_status].label.toLowerCase()}.`);
 
 // POST /admin/orders/:code/cancel
-export const cancel = act((code, opts) => orderService.cancel(code, opts),
+export const cancel = act((code, opts) => orderService.cancelOrder(code, "admin", opts),
   (o) => `${o.order_code} was cancelled and its stock was returned.${o.payment_status === "refunded" ? " GCash payment marked refunded." : ""}`);
 
 // POST /admin/orders/:code/return

@@ -26,7 +26,7 @@ const run = (action, where) => async (req, res, next) => {
 };
 
 // GET /cart
-export const show = async (req, res, next) => {
+export const view = async (req, res, next) => {
   try {
     const cart = await cartService.getCart(req.session.customer.id);
     res.render("cart", { title: "Your cart", cart });
@@ -43,7 +43,7 @@ export const add = run(
 
 // POST /cart/:id/update
 export const update = run(
-  (req) => cartService.updateItem(req.session.customer.id, req.params.id, req.body),
+  (req) => cartService.updateQty(req.session.customer.id, req.params.id, req.body),
   () => "/cart"
 );
 

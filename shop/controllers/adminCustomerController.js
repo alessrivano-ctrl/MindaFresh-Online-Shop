@@ -12,7 +12,7 @@ export const list = async (req, res, next) => {
 };
 
 // POST /admin/customers/:code/status — enable or disable an account
-export const updateStatus = async (req, res, next) => {
+export const setStatus = async (req, res, next) => {
   try {
     const c = await customerService.setStatus(req.params.code, req.body.status);
     req.flash("success_msg", `${c.first_name} ${c.last_name} (${c.customer_code}) is now ${c.status === "active" ? "enabled" : "disabled"}.`);

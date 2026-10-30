@@ -29,7 +29,7 @@ router.post("/profile", requireCustomer, auth.updateProfile);
 router.post("/profile/password", requireCustomer, auth.changePassword);
 
 // Cart and checkout (logged-in customer)
-router.get("/cart", requireCustomer, cart.show);
+router.get("/cart", requireCustomer, cart.view);
 router.post("/cart/add", requireCustomer, cart.add);
 router.post("/cart/:id/update", requireCustomer, cart.update);
 router.post("/cart/:id/remove", requireCustomer, cart.remove);
@@ -37,7 +37,7 @@ router.get("/checkout", requireCustomer, checkout.show);
 router.post("/checkout", requireCustomer, checkout.placeOrder);
 
 // My orders
-router.get("/orders", requireCustomer, order.list);
+router.get("/orders", requireCustomer, order.myOrders);
 router.get("/orders/:code", requireCustomer, order.show);
 router.post("/orders/:code/cancel", requireCustomer, order.cancel);
 
@@ -50,13 +50,13 @@ router.get("/admin/logout", auth.staffLogout);
 // Admin and Accountant
 router.get("/admin/orders", requireRole("admin", "accountant"), adminOrder.list);
 router.get("/admin/orders/:code", requireRole("admin", "accountant"), adminOrder.show);
-router.get("/admin/reports/sales", requireRole("admin", "accountant"), report.sales);
+router.get("/admin/report", requireRole("admin", "accountant"), report.salesSummary);
 
 // Admin only
 router.post("/admin/orders/:code/status", requireRole("admin"), adminOrder.updateStatus);
 router.post("/admin/orders/:code/cancel", requireRole("admin"), adminOrder.cancel);
 router.post("/admin/orders/:code/return", requireRole("admin"), adminOrder.recordReturn);
 router.get("/admin/customers", requireRole("admin"), adminCustomer.list);
-router.post("/admin/customers/:code/status", requireRole("admin"), adminCustomer.updateStatus);
+router.post("/admin/customers/:code/status", requireRole("admin"), adminCustomer.setStatus);
 
 export default router;

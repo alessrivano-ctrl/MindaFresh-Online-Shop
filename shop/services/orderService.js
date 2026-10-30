@@ -2,6 +2,7 @@
 // Golden rule: an order and its stock change happen in ONE transaction, so there is never half an order.
 import { Op } from "sequelize";
 import { sequelize, Product, Order, OrderItem, Customer } from "../models/index.js";
+import { ORDER_FLOW, CANCEL_RULES } from "../models/Order.js";
 import { deductStock, returnStock } from "./stockService.js";
 import * as cartService from "./cartService.js";
 import { AppError } from "../utils/appError.js";
@@ -9,13 +10,10 @@ import { round2 } from "../utils/money.js";
 import { manilaDate } from "../utils/dates.js";
 
 export const ORDER_STATUSES = ["pending", "confirmed", "out_for_delivery", "delivered", "cancelled", "returned"];
-// Next step in the delivery flow (state machine, Figure 11)
-export const NEXT_STATUS = { pending: "confirmed", confirmed: "out_for_delivery", out_for_delivery: "delivered" };
-export const CUSTOMER_CAN_CANCEL = ["pending"];
-export const ADMIN_CAN_CANCEL = ["pending", "confirmed", "out_for_delivery"];
 
-// IPlaceOrder: checkout creates the order, deducts stock through POS's stockService,
-// saves the items with price snapshots and clears the cart (sequence diagram, Figure 10)
+// +placeOrder(customerId, method, address) — IPlaceOrder port (Figure 5), sequence diagram (Figure 10):
+// get the cart and compute the totals, then in ONE transaction create the order, deduct stock
+// through POS's stockService, save the items with price snapshots and clear the cart.
 export async function placeOrder(customerId, { payment_method, address, city, phone }) {
   if (!["cod", "gcash"].includes(payment_method))
     throw new AppError("VALIDATION_ERROR", "Please choose cash on delivery or GCash.");
@@ -24,30 +22,20 @@ export async function placeOrder(customerId, { payment_method, address, city, ph
   if (!address || !city) throw new AppError("VALIDATION_ERROR", "Please enter your delivery address and city.");
   const delivery_address = `${address}, ${city}`.slice(0, 255);
 
+  // 1. Get the cart with live prices from POS's products table, and compute the totals
+  const { items } = await cartService.getCart(customerId);
+  if (!items.length) throw new AppError("VALIDATION_ERROR", "Your cart is empty.");
+  const gone = items.find((i) => i.unavailable);
+  if (gone) throw new AppError("PRODUCT_UNAVAILABLE", `${gone.name} is no longer sold online. Please remove it from your cart.`);
+  const { subtotal, shipping_fee, total } = cartService.computeTotals(items);
+
+  // 2. One transaction: create the order, deduct stock (rows locked), save items, clear the cart
   return sequelize.transaction(async (t) => {
-    const cart = await cartService.itemsForCheckout(customerId, t);
-    if (!cart.length) throw new AppError("VALIDATION_ERROR", "Your cart is empty.");
-    for (const item of cart) {
-      if (!item.Product || item.Product.status !== "active" || !item.Product.is_online)
-        throw new AppError("PRODUCT_UNAVAILABLE", `${item.Product?.name ?? "A product"} is no longer sold online. Please remove it from your cart.`);
-    }
-
-    // Live prices from POS's products table (never from the cart)
-    const lines = cart.map((item) => ({
-      product_id: item.product_id,
-      product_name: item.Product.name,
-      quantity: item.quantity,
-      unit_price: Number(item.Product.selling_price),
-      line_total: round2(Number(item.Product.selling_price) * item.quantity)
-    }));
-    const subtotal = round2(lines.reduce((sum, l) => sum + l.line_total, 0));
-    const shipping_fee = cartService.shippingFee();
-
     const order = await Order.create({
       customer_id: customerId,
       subtotal,
       shipping_fee,
-      total_amount: round2(subtotal + shipping_fee),
+      total_amount: total,
       total_cost: 0,
       payment_method,
       payment_status: payment_method === "gcash" ? "paid" : "unpaid",
@@ -57,11 +45,19 @@ export async function placeOrder(customerId, { payment_method, address, city, ph
     }, { transaction: t });
 
     // Throws INSUFFICIENT_STOCK ("Only 2 left of Calamansi 1kg Pack.") and rolls everything back
-    const deducted = await deductStock({ items: lines.map(({ product_id, quantity }) => ({ product_id, quantity })), order_id: order.id }, t);
+    const deducted = await deductStock({ items: items.map(({ product_id, quantity }) => ({ product_id, quantity })), order_id: order.id }, t);
     const costOf = Object.fromEntries(deducted.map((d) => [d.product_id, Number(d.unit_cost)]));
 
-    await OrderItem.bulkCreate(lines.map((l) => ({ ...l, order_id: order.id, unit_cost: costOf[l.product_id] })), { transaction: t });
-    order.total_cost = round2(lines.reduce((sum, l) => sum + l.quantity * costOf[l.product_id], 0));
+    await OrderItem.bulkCreate(items.map((i) => ({
+      order_id: order.id,
+      product_id: i.product_id,
+      product_name: i.name,
+      quantity: i.quantity,
+      unit_price: i.price,
+      unit_cost: costOf[i.product_id],
+      line_total: i.line_total
+    })), { transaction: t });
+    order.total_cost = round2(items.reduce((sum, i) => sum + i.quantity * costOf[i.product_id], 0));
     await order.save({ transaction: t });
 
     await cartService.clear(customerId, t);
@@ -79,16 +75,25 @@ async function lockOrder(orderCode, t, customerId = null) {
   return order;
 }
 
+export { CANCEL_RULES };
+
 const words = (s) => s.replaceAll("_", " ");
 
-// IManageOrder: pending → confirmed → out_for_delivery → delivered
-export async function updateStatus(orderCode) {
+// The next delivery step of a status (pending → confirmed → out_for_delivery → delivered), or null
+export const nextStep = (status) => {
+  const step = (ORDER_FLOW[status] ?? [])[0];
+  return step && !["cancelled", "returned"].includes(step) ? step : null;
+};
+
+// +advanceStatus(orderCode, next) — IManageOrder: one delivery step at a time, never skipping
+export async function advanceStatus(orderCode, next = null) {
   return sequelize.transaction(async (t) => {
     const order = await lockOrder(orderCode, t);
-    const next = NEXT_STATUS[order.order_status];
-    if (!next) throw new AppError("VALIDATION_ERROR", `A ${words(order.order_status)} order cannot move forward.`);
-    order.order_status = next;
-    if (next === "delivered") {
+    const step = nextStep(order.order_status);
+    if (!step || (next && next !== step) || !order.nextStatuses().includes(step))
+      throw new AppError("VALIDATION_ERROR", `A ${words(order.order_status)} order cannot move to ${words(next || "the next step")}.`);
+    order.order_status = step;
+    if (step === "delivered") {
       order.payment_status = "paid";  // COD is collected by the rider; GCash was already paid
       order.delivered_at = new Date(); // Accounting posts the sale on delivery
     }
@@ -97,13 +102,13 @@ export async function updateStatus(orderCode) {
   });
 }
 
-// Cancelled before delivery: return the stock, refund GCash. No accounting entry (a sale is posted only on delivery).
-export async function cancel(orderCode, { customerId = null, employeeId = null } = {}) {
+// +cancelOrder(orderCode, role) — before delivery: return the stock, refund GCash.
+// No accounting entry (a sale is posted only on delivery). role = "customer" | "admin".
+export async function cancelOrder(orderCode, role, { customerId = null, employeeId = null } = {}) {
   return sequelize.transaction(async (t) => {
-    const order = await lockOrder(orderCode, t, customerId);
-    const allowed = customerId ? CUSTOMER_CAN_CANCEL : ADMIN_CAN_CANCEL;
-    if (!allowed.includes(order.order_status)) {
-      throw new AppError("VALIDATION_ERROR", customerId
+    const order = await lockOrder(orderCode, t, role === "customer" ? customerId : null);
+    if (!order.canCancel(role)) {
+      throw new AppError("VALIDATION_ERROR", role === "customer"
         ? "This order is already confirmed, so it can no longer be cancelled here. Please contact the store."
         : `A ${words(order.order_status)} order cannot be cancelled.`);
     }
@@ -115,11 +120,11 @@ export async function cancel(orderCode, { customerId = null, employeeId = null }
   });
 }
 
-// Returned after delivery: refund and return the stock. Accounting posts a reversal.
+// +recordReturn(orderCode) — returned after delivery: refund and return the stock. Accounting posts a reversal.
 export async function recordReturn(orderCode, { employeeId = null } = {}) {
   return sequelize.transaction(async (t) => {
     const order = await lockOrder(orderCode, t);
-    if (order.order_status !== "delivered") throw new AppError("VALIDATION_ERROR", "Only a delivered order can be returned.");
+    if (!order.nextStatuses().includes("returned")) throw new AppError("VALIDATION_ERROR", "Only a delivered order can be returned.");
     order.order_status = "returned";
     order.payment_status = "refunded";
     await order.save({ transaction: t });
@@ -203,7 +208,8 @@ export async function getForAdmin(orderCode) {
 
 // --- Sales report (DFD process 7, use case "View sales report") ------------------------
 // A sale counts on the day it was delivered, the same date Accounting posts it.
-export async function salesReport(fromDate, toDate) {
+// +salesSummary(dateFrom, dateTo)
+export async function salesSummary(fromDate, toDate) {
   const from = new Date(`${fromDate}T00:00:00+08:00`);
   const to = new Date(`${toDate}T23:59:59.999+08:00`);
   const orders = await Order.findAll({

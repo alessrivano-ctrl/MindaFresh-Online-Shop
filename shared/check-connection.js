@@ -76,7 +76,7 @@ const reach = await new Promise((resolve) => {
   s.on("error", (e) => resolve(e.code));
 });
 if (reach === "ok") ok(`Port ${env.DB_PORT} on ${env.DB_HOST} is open`);
-else if (reach === "ECONNREFUSED") { bad(`${env.DB_HOST} answered but nothing is listening on port ${env.DB_PORT}`, "On the DB host: start MySQL in XAMPP, and set bind-address=0.0.0.0 in my.ini (Step 1.2), then restart MySQL"); stop(); }
+else if (reach === "ECONNREFUSED") { bad(`${env.DB_HOST} answered but nothing is listening on port ${env.DB_PORT}`, "On the DB host: Laragon → Start All. In my.ini put # before skip-grant-tables and use bind-address=0.0.0.0 (Step 1.2), then Stop → Start All"); stop(); }
 else if (reach === "ENOTFOUND") { bad(`DB_HOST "${env.DB_HOST}" is not a valid address`, "Use the IPv4 address from ipconfig on the DB host, for example 192.168.1.10"); stop(); }
 else {
   bad(`No answer from ${env.DB_HOST} (${reach})`, [
@@ -135,7 +135,7 @@ if (!absent.length) {
     }
   };
   try {
-    if (!(await rejects("bogus"))) bad("CHECK constraints are NOT enforced: 'bogus' was accepted as a holiday_type", "Use MariaDB 10.4+ (XAMPP) or MySQL 8.0.16+ on the DB host");
+    if (!(await rejects("bogus"))) bad("CHECK constraints are NOT enforced: 'bogus' was accepted as a holiday_type", "Use MySQL 8.0.16+ in Laragon (right-click Laragon → MySQL → Version)");
     else {
       ok("CHECK constraints are enforced (an unknown status value is rejected)");
       if (await rejects("Regular")) ok("Status values are case-sensitive ('Regular' is rejected, only 'regular' works)");

@@ -27,5 +27,5 @@
   <p class="text-center text-sm text-ink-muted"><a href="/" class="font-semibold">← Back to the shop</a></p>
 </main>
 
-{{> alert/swal}}
+{{> alert/alert}}
 {{> footer}}

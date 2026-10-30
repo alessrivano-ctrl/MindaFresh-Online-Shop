@@ -72,8 +72,8 @@ app.engine("xian", async (filePath, options, callback) => {
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "xian");
 
-// Partials (head, footer, shop-nav, alert/swal, ...) and helpers (peso, datetime, statusBadge, ...)
-// A partial in a sub-folder is named by its path: views/partials/alert/swal.xian → {{> alert/swal}}
+// Partials (head, footer, shop-nav, alert/alert, ...) and helpers (peso, datetime, statusBadge, ...)
+// A partial in a sub-folder is named by its path: views/partials/alert/alert.xian → {{> alert/alert}}
 const partialsDir = path.join(__dirname, "views/partials");
 (function registerPartials(dir) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {

@@ -6,20 +6,23 @@ import { round2 } from "../utils/money.js";
 
 export const shippingFee = () => round2(Number(process.env.SHIPPING_FEE ?? 50));
 
-// The cart with live prices and stock, for the cart and checkout pages
-export async function getCart(customerId) {
+// +getCart(customerId): the cart with live prices and stock, for the cart page, checkout
+// and OrderService.placeOrder (pass the transaction t when called inside checkout)
+export async function getCart(customerId, t = null) {
   const rows = await CartItem.findAll({
     where: { customer_id: customerId },
     include: [{ model: Product, include: [StockLevel, Category] }],
-    order: [["created_at", "ASC"]]
+    order: [["created_at", "ASC"]],
+    transaction: t
   });
   const items = rows.map((r) => {
     const p = r.Product;
     const stock = p.StockLevel?.quantity_on_hand ?? 0;
     const price = Number(p.selling_price);
-    const available = p.status === "active" && p.is_online;
+    const available = p.status === "active" && Boolean(p.is_online);
     return {
       id: r.id,
+      product_id: p.id,
       product_code: p.product_code,
       name: p.name,
       category: p.Category?.name,
@@ -27,17 +30,20 @@ export async function getCart(customerId) {
       image_url: p.image_url,
       price,
       quantity: r.quantity,
-      line_total: round2(price * r.quantity),
+      line_total: r.lineTotal(price),
       stock,
-      short: available && r.quantity > stock, // more in the cart than we have
+      short: available && !p.isAvailable(r.quantity), // more in the cart than we have
       unavailable: !available
     };
   });
+  return { items, ...computeTotals(items), hasProblem: items.some((i) => i.short || i.unavailable) };
+}
+
+// +computeTotals(items): subtotal + shipping fee (₱50 from .env) = total, rounded with round2()
+export function computeTotals(items) {
   const subtotal = round2(items.reduce((s, i) => s + i.line_total, 0));
-  const count = items.reduce((s, i) => s + i.quantity, 0);
-  const fee = items.length ? shippingFee() : 0;
-  return { items, subtotal, shipping_fee: fee, total: round2(subtotal + fee), count,
-           hasProblem: items.some((i) => i.short || i.unavailable) };
+  const shipping_fee = items.length ? shippingFee() : 0;
+  return { subtotal, shipping_fee, total: round2(subtotal + shipping_fee), count: items.reduce((s, i) => s + i.quantity, 0) };
 }
 
 // Number shown on the cart badge
@@ -45,7 +51,7 @@ export async function countItems(customerId) {
   return (await CartItem.sum("quantity", { where: { customer_id: customerId } })) || 0;
 }
 
-// Add to cart, never more than the stock on hand
+// +addItem(customerId, productCode, qty): add to cart, never more than the stock on hand
 export async function addItem(customerId, productCode, quantity) {
   quantity = Math.max(1, parseInt(quantity, 10) || 1);
   const product = await Product.findOne({
@@ -65,8 +71,8 @@ export async function addItem(customerId, productCode, quantity) {
   return `Added ${quantity} × ${product.name} to your cart.`;
 }
 
-// Change a quantity: an exact number, or step "up" / "down". Zero removes the item.
-export async function updateItem(customerId, itemId, { quantity, step }) {
+// +updateQty(customerId, cartItemId, { quantity | step }): an exact number, or step "up" / "down". Zero removes the item.
+export async function updateQty(customerId, itemId, { quantity, step }) {
   const item = await CartItem.findOne({
     where: { id: itemId, customer_id: customerId },
     include: { model: Product, include: StockLevel }
@@ -92,6 +98,7 @@ export async function updateItem(customerId, itemId, { quantity, step }) {
   return null;
 }
 
+// +removeItem(customerId, cartItemId)
 export async function removeItem(customerId, itemId) {
   const item = await CartItem.findOne({ where: { id: itemId, customer_id: customerId }, include: Product });
   if (!item) return null;
@@ -99,11 +106,7 @@ export async function removeItem(customerId, itemId) {
   return `Removed ${item.Product.name}.`;
 }
 
-// Checkout reads the cart and clears it inside the order's transaction
-export function itemsForCheckout(customerId, t) {
-  return CartItem.findAll({ where: { customer_id: customerId }, include: Product, transaction: t });
-}
-
+// Checkout clears the cart inside the order's transaction
 export function clear(customerId, t) {
   return CartItem.destroy({ where: { customer_id: customerId }, transaction: t });
 }

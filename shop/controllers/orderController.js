@@ -16,7 +16,7 @@ function trackerSteps(status) {
 }
 
 // GET /orders
-export const list = async (req, res, next) => {
+export const myOrders = async (req, res, next) => {
   try {
     res.render("orders", { title: "My orders", orders: await orderService.listForCustomer(req.session.customer.id) });
   } catch (err) {
@@ -32,12 +32,12 @@ export const show = async (req, res, next) => {
       return res.status(404).render("error", { title: "Order not found", heading: "Order not found",
         message: "We couldn't find that order in your account." });
     }
-    res.render("order", {
+    res.render("order-detail", {
       title: `Order ${order.order_code}`,
       order,
       steps: trackerSteps(order.order_status),
       stopped: ["cancelled", "returned"].includes(order.order_status),
-      canCancel: orderService.CUSTOMER_CAN_CANCEL.includes(order.order_status)
+      canCancel: orderService.CANCEL_RULES.customer.includes(order.order_status)
     });
   } catch (err) {
     next(err);
@@ -47,7 +47,7 @@ export const show = async (req, res, next) => {
 // POST /orders/:code/cancel
 export const cancel = async (req, res, next) => {
   try {
-    const order = await orderService.cancel(req.params.code, { customerId: req.session.customer.id });
+    const order = await orderService.cancelOrder(req.params.code, "customer", { customerId: req.session.customer.id });
     req.flash("success_msg", `Order ${order.order_code} was cancelled.${order.payment_status === "refunded" ? " Your GCash payment will be refunded." : ""}`);
   } catch (err) {
     if (!(err instanceof AppError)) return next(err);

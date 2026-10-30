@@ -1,4 +1,4 @@
-{{!-- views/partials/alert — flash messages and confirmations with SweetAlert2 (package diagram, Figure 4).
+{{!-- views/partials/alert/alert.xian — flash messages and confirmations with SweetAlert2 (package diagram, Figure 4).
      Success → small toast top-right. Error → dialog. <form data-confirm="Question?"> → asks before submitting. --}}
 <script src="/vendor/sweetalert2/sweetalert2.all.min.js"></script>
 <script type="application/json" id="flash-data">{{{flashJson success_msg error_msg}}}</script>

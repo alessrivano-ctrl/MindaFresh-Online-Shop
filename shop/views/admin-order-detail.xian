@@ -97,5 +97,5 @@
   </main>
 </div>
 
-{{> alert/swal}}
+{{> alert/alert}}
 {{> footer}}

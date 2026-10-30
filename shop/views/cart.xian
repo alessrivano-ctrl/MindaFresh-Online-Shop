@@ -60,5 +60,5 @@
   {{/if}}
 </main>
 
-{{> alert/swal}}
+{{> alert/alert}}
 {{> footer}}

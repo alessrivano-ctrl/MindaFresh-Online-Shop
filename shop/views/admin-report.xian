@@ -10,7 +10,7 @@
         <h1 class="text-[28px] font-extrabold tracking-tight">Sales report</h1>
         <p class="text-sm text-ink-muted">Online orders delivered from <strong class="text-ink">{{report.from}}</strong> to <strong class="text-ink">{{report.to}}</strong>. A sale counts on its delivery date, the same date Accounting posts it.</p>
       </div>
-      <form action="/admin/reports/sales" method="GET" class="flex flex-wrap items-end gap-2 print:hidden">
+      <form action="/admin/report" method="GET" class="flex flex-wrap items-end gap-2 print:hidden">
         <div class="flex flex-col gap-1">
           <label for="from" class="text-xs font-bold text-ink-muted">From</label>
           <input id="from" name="from" type="date" value="{{report.from}}" class="field min-h-[40px] w-40 text-sm">
@@ -105,5 +105,5 @@
   </main>
 </div>
 
-{{> alert/swal}}
+{{> alert/alert}}
 {{> footer}}
