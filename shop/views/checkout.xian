@@ -1,6 +1,6 @@
 {{> head}}
 <header class="border-b border-line bg-white">
-  <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-3.5">
+  <div class="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-4 px-6 py-3.5">
     <a href="/" class="flex items-center gap-2.5 text-ink no-underline">
       <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 20A7 7 0 0 1 4 13c0-5 4-9 16-9 0 12-4 16-9 16Z"/><path d="M4 20c4-4 7-6 11-8"/></svg>
@@ -14,7 +14,7 @@
   </div>
 </header>
 
-<main class="mx-auto flex w-full max-w-6xl flex-col gap-5 px-6 pb-14 pt-7">
+<main class="mx-auto flex w-full max-w-[1440px] flex-col gap-5 px-6 pb-14 pt-7">
   <h1 class="text-[32px] font-extrabold tracking-tight">Checkout</h1>
 
   <form action="/checkout" method="POST" class="flex flex-wrap items-start gap-6">

@@ -1,5 +1,5 @@
 // shared/models/index.js — all models and their associations.
-// This file has the 10 models the Online Shop uses. Each owner adds the rest of the 26
+// This file has the 11 models the Online Shop uses. Each owner adds the rest of the 26
 // (departments, leave_requests, payroll, suppliers, purchase orders, sales, attendance, accounting).
 import { sequelize } from "../config/database.js";
 import { Employee } from "./Employee.js";
@@ -12,6 +12,7 @@ import { Customer } from "./Customer.js";
 import { CartItem } from "./CartItem.js";
 import { Order } from "./Order.js";
 import { OrderItem } from "./OrderItem.js";
+import { ProductReview } from "./ProductReview.js";
 
 // HR
 User.belongsTo(Employee, { foreignKey: "employee_id" });
@@ -35,10 +36,15 @@ Customer.hasMany(Order, { foreignKey: "customer_id" });
 Order.hasMany(OrderItem, { foreignKey: "order_id" });
 OrderItem.belongsTo(Order, { foreignKey: "order_id" });
 OrderItem.belongsTo(Product, { foreignKey: "product_id" });
+ProductReview.belongsTo(Customer, { foreignKey: "customer_id" });
+ProductReview.belongsTo(Product, { foreignKey: "product_id" });
+ProductReview.belongsTo(Order, { foreignKey: "order_id" });
+Product.hasMany(ProductReview, { foreignKey: "product_id" });
+Customer.hasMany(ProductReview, { foreignKey: "customer_id" });
 
 export {
   sequelize,
   Employee, User,
   Category, Product, StockLevel, StockMovement,
-  Customer, CartItem, Order, OrderItem
+  Customer, CartItem, Order, OrderItem, ProductReview
 };

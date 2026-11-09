@@ -3,6 +3,7 @@
 import { Product, Category, StockLevel, CartItem } from "../models/index.js";
 import { AppError } from "../utils/appError.js";
 import { round2 } from "../utils/money.js";
+import { imageFor } from "./productPhotoService.js";
 
 export const shippingFee = () => round2(Number(process.env.SHIPPING_FEE ?? 50));
 
@@ -27,7 +28,7 @@ export async function getCart(customerId, t = null) {
       name: p.name,
       category: p.Category?.name,
       unit: p.unit,
-      image_url: p.image_url,
+      image_url: imageFor(p),
       price,
       quantity: r.quantity,
       line_total: r.lineTotal(price),

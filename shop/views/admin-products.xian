@@ -1,0 +1,72 @@
+{{> head}}
+{{> admin-nav}}
+
+<div class="mx-auto flex w-full max-w-[1440px] flex-wrap gap-6 p-6 md:flex-nowrap">
+  {{> admin-side}}
+
+  <main class="flex min-w-0 flex-1 flex-col gap-5">
+    <div class="flex flex-col gap-1">
+      <h1 class="text-[28px] font-extrabold tracking-tight">Product photos</h1>
+      <p class="text-sm text-ink-muted">Products, prices and stock are managed in POS. Here you choose the photo customers see in the shop. JPG, PNG or WebP, up to 2 MB. Square photos look best.</p>
+    </div>
+
+    <div class="card overflow-x-auto rounded-[18px]">
+      <table class="w-full min-w-[900px] border-collapse text-sm">
+        <thead>
+          <tr class="bg-peach-soft text-left">
+            <th scope="col" class="px-4 py-3 font-bold">Photo</th>
+            <th scope="col" class="px-4 py-3 font-bold">Product</th>
+            <th scope="col" class="px-4 py-3 text-right font-bold">Price</th>
+            <th scope="col" class="px-4 py-3 text-right font-bold">Stock</th>
+            <th scope="col" class="px-4 py-3 font-bold">In shop</th>
+            <th scope="col" class="px-4 py-3 font-bold">Change photo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each products}}
+          <tr class="border-t border-[#F6EADD] align-middle">
+            <td class="px-4 py-3">
+              <div class="h-16 w-16 overflow-hidden rounded-xl border border-line">
+                {{> product-photo h="h-16" small=true}}
+              </div>
+            </td>
+            <td class="px-4 py-3">
+              <div class="font-bold">{{name}}</div>
+              <div class="text-xs text-ink-muted">{{product_code}} · {{category}} · per {{unit}}</div>
+            </td>
+            <td class="px-4 py-3 text-right font-bold">{{peso price}}</td>
+            <td class="px-4 py-3 text-right">{{stock}}</td>
+            <td class="px-4 py-3">
+              {{#if online}}<span class="badge bg-leaf-bg text-[#2F4A12]">Shown</span>{{else}}<span class="badge bg-[#F3E9DF] text-ink-soft">Hidden in POS</span>{{/if}}
+            </td>
+            <td class="px-4 py-3">
+              {{#if fromPos}}
+                <span class="text-xs text-ink-muted">Photo set in POS</span>
+              {{else}}
+              <div class="flex flex-wrap items-center gap-2">
+                <form action="/admin/products/{{product_code}}/photo" method="POST" enctype="multipart/form-data" class="flex flex-wrap items-center gap-2">
+                  <label for="photo-{{product_code}}" class="sr-only">Photo for {{name}}</label>
+                  <input id="photo-{{product_code}}" name="photo" type="file" accept="image/jpeg,image/png,image/webp" required
+                         class="max-w-[220px] text-xs file:mr-2 file:cursor-pointer file:rounded-lg file:border-0 file:bg-peach file:px-3 file:py-2 file:text-xs file:font-bold file:text-brand-dark">
+                  <button type="submit" class="btn-dark min-h-[36px] px-3.5 text-sm">{{#if hasShopPhoto}}Replace{{else}}Upload{{/if}}</button>
+                </form>
+                {{#if hasShopPhoto}}
+                <form action="/admin/products/{{product_code}}/photo/remove" method="POST" data-confirm="Remove the photo of {{name}}?" data-confirm-text="The shop will show the plain placeholder until you upload a new photo." data-confirm-button="Yes, remove">
+                  <button type="submit" class="btn-outline min-h-[36px] px-3.5 text-sm">Remove</button>
+                </form>
+                {{/if}}
+              </div>
+              {{/if}}
+            </td>
+          </tr>
+          {{else}}
+          <tr><td colspan="6" class="px-4 py-8 text-center text-ink-muted">No products yet. Products are added in POS.</td></tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+{{> alert/alert}}
+{{> footer}}

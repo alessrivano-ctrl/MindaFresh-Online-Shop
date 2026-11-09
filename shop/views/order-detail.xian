@@ -1,7 +1,7 @@
 {{> head}}
 {{> shop-nav}}
 
-<main class="mx-auto flex w-full max-w-6xl flex-col gap-5 px-6 pb-14 pt-7">
+<main class="mx-auto flex w-full max-w-[1440px] flex-col gap-5 px-6 pb-14 pt-7">
 
   {{#with order}}
   <div class="flex flex-wrap items-end justify-between gap-3">
@@ -44,9 +44,41 @@
     <section class="card flex min-w-0 flex-[999_1_560px] flex-col gap-3.5 p-6">
       <h2 class="text-xl font-extrabold">Items</h2>
       {{#each order.items}}
-        <div class="flex items-center gap-3.5">
-          <span class="flex-1 text-[15px] font-semibold">{{quantity}} × {{product_name}} <span class="font-normal text-ink-muted">· {{peso unit_price}} each</span></span>
-          <span class="text-[15px] font-bold">{{peso line_total}}</span>
+        <div id="rate-{{product_code}}" class="flex flex-col gap-2.5 {{#if ../canRate}}border-b border-[#F6EADD] pb-3.5{{/if}}">
+          <div class="flex items-center gap-3.5">
+            <span class="flex-1 text-[15px] font-semibold">{{quantity}} × <a href="/products/{{product_code}}" class="hover:text-brand">{{product_name}}</a> <span class="font-normal text-ink-muted">· {{peso unit_price}} each</span></span>
+            <span class="text-[15px] font-bold">{{peso line_total}}</span>
+          </div>
+          {{#if ../canRate}}
+          <details class="group rounded-xl bg-cream px-4 py-3" {{#unless review}}open{{/unless}}>
+            <summary class="flex cursor-pointer list-none flex-wrap items-center gap-2 text-sm font-bold text-brand">
+              {{#if review}}
+                <span class="tracking-wider text-[#E8A317]" aria-label="You rated {{review.rating}} out of 5">{{stars review.rating}}</span>
+                <span>Your review · Edit</span>
+                {{#if review.hidden}}<span class="badge bg-[#F3E9DF] text-ink-soft">Hidden by the store</span>{{/if}}
+              {{else}}
+                <span>Rate this product</span>
+              {{/if}}
+            </summary>
+            <form action="/orders/{{../order.order_code}}/reviews" method="POST" class="mt-3 flex flex-col gap-3">
+              <input type="hidden" name="product_code" value="{{product_code}}">
+              <fieldset class="flex flex-col gap-2">
+                <legend class="label mb-1">Your rating for {{product_name}}</legend>
+                <div class="flex flex-wrap gap-2">
+                  {{#each (list 5 4 3 2 1)}}
+                  <label class="cursor-pointer">
+                    <input type="radio" name="rating" value="{{this}}" required class="peer sr-only" {{#if (eq this ../review.rating)}}checked{{/if}}>
+                    <span class="flex min-h-[40px] items-center gap-1 rounded-xl border border-line-strong bg-white px-3.5 text-sm font-bold peer-checked:border-brand peer-checked:bg-brand peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-brand">{{this}} ★</span>
+                  </label>
+                  {{/each}}
+                </div>
+              </fieldset>
+              <label for="comment-{{product_code}}" class="label">Your review <span class="font-normal text-ink-muted">(optional)</span></label>
+              <textarea id="comment-{{product_code}}" name="comment" rows="2" maxlength="500" placeholder="How was the quality and freshness?" class="field">{{review.comment}}</textarea>
+              <button type="submit" class="btn-primary self-start">{{#if review}}Update review{{else}}Post review{{/if}}</button>
+            </form>
+          </details>
+          {{/if}}
         </div>
       {{/each}}
       <div class="flex flex-col gap-2 border-t border-line pt-3.5 text-[15px]">

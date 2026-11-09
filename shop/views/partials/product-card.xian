@@ -5,6 +5,13 @@
   <div class="flex flex-1 flex-col gap-2 p-4">
     <span class="text-xs font-semibold uppercase tracking-wider text-ink-muted">{{category}}</span>
     <a href="/products/{{product_code}}" class="text-base font-bold leading-snug text-ink hover:text-brand">{{name}}</a>
+    {{#if rating}}
+      <a href="/products/{{product_code}}#reviews" class="flex items-center gap-1.5 text-[13px] text-ink-muted" aria-label="Rated {{rating1 rating.average}} out of 5 from {{rating.count}} {{plural rating.count "review" "reviews"}}">
+        <span class="tracking-wider text-[#E8A317]" aria-hidden="true">{{stars rating.average}}</span>
+        <span class="font-semibold text-ink-soft">{{rating1 rating.average}}</span>
+        <span>({{rating.count}})</span>
+      </a>
+    {{/if}}
     <div class="flex items-baseline gap-1.5">
       <span class="text-xl font-extrabold">{{peso price}}</span>
       <span class="text-[13px] text-ink-muted">/ {{unit}}</span>

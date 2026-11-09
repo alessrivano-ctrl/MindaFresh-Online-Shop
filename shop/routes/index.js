@@ -10,6 +10,8 @@ import * as order from "../controllers/orderController.js";
 import * as adminOrder from "../controllers/adminOrderController.js";
 import * as adminCustomer from "../controllers/adminCustomerController.js";
 import * as report from "../controllers/reportController.js";
+import * as adminProduct from "../controllers/adminProductController.js";
+import * as review from "../controllers/reviewController.js";
 
 const router = express.Router();
 
@@ -40,6 +42,7 @@ router.post("/checkout", requireCustomer, checkout.placeOrder);
 router.get("/orders", requireCustomer, order.myOrders);
 router.get("/orders/:code", requireCustomer, order.show);
 router.post("/orders/:code/cancel", requireCustomer, order.cancel);
+router.post("/orders/:code/reviews", requireCustomer, review.save);
 
 // Staff (users ⨝ employees)
 router.get("/admin", (req, res) => res.redirect("/admin/orders"));
@@ -58,5 +61,10 @@ router.post("/admin/orders/:code/cancel", requireRole("admin"), adminOrder.cance
 router.post("/admin/orders/:code/return", requireRole("admin"), adminOrder.recordReturn);
 router.get("/admin/customers", requireRole("admin"), adminCustomer.list);
 router.post("/admin/customers/:code/status", requireRole("admin"), adminCustomer.setStatus);
+router.get("/admin/products", requireRole("admin"), adminProduct.list);
+router.post("/admin/products/:code/photo", requireRole("admin"), adminProduct.uploadPhoto);
+router.post("/admin/products/:code/photo/remove", requireRole("admin"), adminProduct.removePhoto);
+router.get("/admin/reviews", requireRole("admin"), review.list);
+router.post("/admin/reviews/:id/status", requireRole("admin"), review.setStatus);
 
 export default router;

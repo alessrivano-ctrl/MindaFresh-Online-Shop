@@ -3,11 +3,13 @@
 // cost_price is never sent to a view.
 import { Op } from "sequelize";
 import { Product, Category, StockLevel } from "../models/index.js";
+import { imageFor } from "../services/productPhotoService.js";
+import * as reviewService from "../services/reviewService.js";
 
 const LOW_STOCK = 10;
 const onlineWhere = { is_online: true, status: "active" };
 
-function toCard(p) {
+function toCard(p, ratings = {}) {
   const stock = p.StockLevel?.quantity_on_hand ?? 0;
   return {
     product_code: p.product_code,
@@ -17,10 +19,11 @@ function toCard(p) {
     category_code: p.Category?.category_code,
     unit: p.unit,
     price: Number(p.selling_price),
-    image_url: p.image_url,
+    image_url: imageFor(p), // POS image_url, else the photo the Shop admin uploaded
     stock,
     inStock: stock > 0,
-    lowStock: stock > 0 && stock <= LOW_STOCK
+    lowStock: stock > 0 && stock <= LOW_STOCK,
+    rating: ratings[p.id] || null // { average, count } of visible reviews
   };
 }
 
@@ -37,12 +40,13 @@ export const index = async (req, res, next) => {
     if (active) where.category_id = active.id;
     const products = await Product.findAll({ where, include: [Category, StockLevel], order: [["name", "ASC"]] });
 
+    const ratings = await reviewService.summaries(products.map((p) => p.id));
     res.render("home", {
       title: "Shop",
       q,
       categoryCode: active ? categoryCode : "",
       categories: categories.map((c) => ({ code: c.category_code, name: c.name, active: c.category_code === categoryCode })),
-      products: products.map(toCard),
+      products: products.map((p) => toCard(p, ratings)),
       filtered: Boolean(q || active),
       activeName: active?.name
     });
@@ -63,8 +67,10 @@ export const show = async (req, res, next) => {
       where: { ...onlineWhere, category_id: product.category_id, id: { [Op.ne]: product.id } },
       include: [Category, StockLevel], limit: 4, order: [["name", "ASC"]]
     });
-    const card = toCard(product);
-    res.render("product", { title: card.name, product: card, related: related.map(toCard) });
+    const ratings = await reviewService.summaries([product.id, ...related.map((p) => p.id)]);
+    const card = toCard(product, ratings);
+    const reviews = await reviewService.forProduct(product.id, req.session.customer?.id);
+    res.render("product", { title: card.name, product: card, reviews, related: related.map((p) => toCard(p, ratings)) });
   } catch (err) {
     next(err);
   }

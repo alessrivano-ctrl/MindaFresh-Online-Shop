@@ -1,0 +1,51 @@
+<section id="reviews" aria-labelledby="reviews-title" class="card flex flex-wrap gap-8 rounded-3xl p-8">
+  <div class="flex basis-64 flex-col gap-3">
+    <h2 id="reviews-title" class="text-[22px] font-extrabold">Customer reviews</h2>
+    {{#if reviews.count}}
+      <div class="flex items-baseline gap-2">
+        <span class="text-5xl font-extrabold">{{rating1 reviews.average}}</span>
+        <span class="text-ink-muted">out of 5</span>
+      </div>
+      <span class="text-xl tracking-wider text-[#E8A317]" aria-hidden="true">{{stars reviews.average}}</span>
+      <span class="text-sm text-ink-muted">{{reviews.count}} verified {{plural reviews.count "review" "reviews"}}</span>
+      <ul class="flex flex-col gap-1.5 pt-1" aria-label="Rating breakdown">
+        {{#each reviews.breakdown}}
+        <li class="flex items-center gap-2 text-sm">
+          <span class="w-9 text-ink-muted">{{level}} ★</span>
+          <span class="h-2 flex-1 overflow-hidden rounded-full bg-peach-soft"><span class="block h-full rounded-full bg-[#E8A317]" style="width: {{percent}}%"></span></span>
+          <span class="w-6 text-right text-ink-muted">{{n}}</span>
+        </li>
+        {{/each}}
+      </ul>
+    {{else}}
+      <p class="text-[15px] text-ink-muted">No reviews yet. Customers who received this product can be the first to review it.</p>
+    {{/if}}
+  </div>
+
+  <div class="flex min-w-0 flex-[1_1_420px] flex-col gap-5">
+    {{#if reviews.rateFrom}}
+      <p class="rounded-2xl bg-cream p-5 text-[15px] text-ink-soft">You received this product. <a href="/orders/{{reviews.rateFrom}}#rate-{{product.product_code}}" class="font-bold text-brand">Rate it from order {{reviews.rateFrom}}</a>.</p>
+    {{else if reviews.mine}}
+      <p class="rounded-2xl bg-cream p-5 text-[15px] text-ink-soft">{{#if reviews.mine.hidden}}The store has hidden your review, so other customers cannot see it. {{/if}}You can edit your review from <a href="/orders/{{reviews.mine.order_code}}#rate-{{product.product_code}}" class="font-bold text-brand">order {{reviews.mine.order_code}}</a>.</p>
+    {{else}}
+      <p class="text-sm text-ink-muted">Only customers who received this product can review it, from <span class="font-semibold">My orders</span> after delivery.</p>
+    {{/if}}
+
+    {{#if reviews.reviews.length}}
+    <ul class="flex flex-col divide-y divide-[#F6EADD]">
+      {{#each reviews.reviews}}
+      <li class="flex flex-col gap-1.5 py-4">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="tracking-wider text-[#E8A317]" aria-label="{{rating}} out of 5 stars">{{stars rating}}</span>
+          <span class="font-bold">{{name}}</span>
+          {{#if verified}}<span class="badge bg-leaf-bg text-[#2F4A12]">Verified purchase</span>{{/if}}
+          {{#if own}}<span class="badge bg-peach text-brand-dark">Your review</span>{{/if}}
+          <span class="text-xs text-ink-muted">{{datetime date}}</span>
+        </div>
+        {{#if comment}}<p class="text-[15px] leading-relaxed text-ink-soft">{{comment}}</p>{{/if}}
+      </li>
+      {{/each}}
+    </ul>
+    {{/if}}
+  </div>
+</section>

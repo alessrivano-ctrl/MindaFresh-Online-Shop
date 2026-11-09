@@ -149,6 +149,7 @@ function toView(o) {
     total_amount: Number(o.total_amount),
     items: (o.OrderItems || []).map((i) => ({
       product_name: i.product_name,
+      product_id: i.product_id,
       product_code: i.Product?.product_code,
       quantity: i.quantity,
       unit_price: Number(i.unit_price),

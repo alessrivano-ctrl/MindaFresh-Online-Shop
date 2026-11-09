@@ -1,5 +1,6 @@
 // orderController — use cases "View and track orders", "Cancel pending order"
 import * as orderService from "../services/orderService.js";
+import * as reviewService from "../services/reviewService.js";
 import { AppError } from "../utils/appError.js";
 
 // The 4 steps of the tracker; cancelled and returned orders show a banner instead
@@ -32,9 +33,16 @@ export const show = async (req, res, next) => {
       return res.status(404).render("error", { title: "Order not found", heading: "Order not found",
         message: "We couldn't find that order in your account." });
     }
+    // Delivered (or later returned) orders: each item can be rated ("Write review")
+    const canRate = ["delivered", "returned"].includes(order.order_status);
+    if (canRate) {
+      const mine = await reviewService.mineForOrder(req.session.customer.id, order.items.map((i) => i.product_id));
+      order.items = order.items.map((i) => ({ ...i, review: mine[i.product_id] || null }));
+    }
     res.render("order-detail", {
       title: `Order ${order.order_code}`,
       order,
+      canRate,
       steps: trackerSteps(order.order_status),
       stopped: ["cancelled", "returned"].includes(order.order_status),
       canCancel: orderService.CANCEL_RULES.customer.includes(order.order_status)

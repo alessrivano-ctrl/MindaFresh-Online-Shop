@@ -2,6 +2,7 @@
 import hbs from "hbs";
 import { peso } from "./money.js";
 import { manilaDateTime } from "./dates.js";
+import { starText } from "./rating.js";
 
 export const ORDER_STATUS = {
   pending:          { label: "Pending",          badge: "bg-[#F3E9DF] text-ink-soft" },
@@ -35,5 +36,8 @@ export function registerViewHelpers() {
   // Flash messages as JSON for the SweetAlert2 partial ("<" escaped so the text can never close the script tag)
   hbs.registerHelper("flashJson", (success, error) =>
     JSON.stringify({ success: [].concat(success || []), error: [].concat(error || []) }).replace(/</g, "\\u003c"));
+  hbs.registerHelper("stars", (r) => starText(r));
+  hbs.registerHelper("list", (...args) => args.slice(0, -1));
+  hbs.registerHelper("rating1", (r) => Number(r || 0).toFixed(1));
   hbs.registerHelper("isoDate", (d) => (d ? new Date(d).toISOString().slice(0, 10) : ""));
 }

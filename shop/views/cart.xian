@@ -1,7 +1,7 @@
 {{> head}}
 {{> shop-nav}}
 
-<main class="mx-auto flex w-full max-w-6xl flex-col gap-5 px-6 pb-14 pt-7">
+<main class="mx-auto flex w-full max-w-[1440px] flex-col gap-5 px-6 pb-14 pt-7">
   <div class="flex flex-wrap items-baseline justify-between gap-3">
     <h1 class="text-[32px] font-extrabold tracking-tight">Your cart</h1>
     <a href="/" class="text-[15px] font-semibold">← Continue shopping</a>
