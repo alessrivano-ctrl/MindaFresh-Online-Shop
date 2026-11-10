@@ -394,6 +394,26 @@ CREATE TABLE order_items (
   CONSTRAINT chk_order_item_qty CHECK (quantity > 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Online Shop (Ali): product_reviews
+CREATE TABLE product_reviews (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  customer_id INT UNSIGNED NOT NULL,
+  product_id INT UNSIGNED NOT NULL,
+  order_id INT UNSIGNED NOT NULL,
+  rating TINYINT UNSIGNED NOT NULL,
+  comment VARCHAR(500) NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'visible',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_review_customer_product (customer_id, product_id),
+  CONSTRAINT fk_product_reviews_customer_id FOREIGN KEY (customer_id) REFERENCES customers (id),
+  CONSTRAINT fk_product_reviews_product_id FOREIGN KEY (product_id) REFERENCES products (id),
+  CONSTRAINT fk_product_reviews_order_id FOREIGN KEY (order_id) REFERENCES orders (id),
+  CONSTRAINT chk_review_rating CHECK (rating BETWEEN 1 AND 5),
+  CONSTRAINT chk_product_reviews_status CHECK (status IN ('visible', 'hidden'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Attendance (Brian): holidays
 CREATE TABLE holidays (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -414,6 +434,8 @@ CREATE TABLE attendance_logs (
   employee_id INT UNSIGNED NOT NULL,
   log_date DATE NOT NULL,
   time_in DATETIME NULL,
+  lunch_out DATETIME NULL,
+  lunch_in DATETIME NULL,
   time_out DATETIME NULL,
   hours_worked DECIMAL(5,2) NOT NULL DEFAULT 0.00,
   late_minutes INT NOT NULL DEFAULT 0,
@@ -429,7 +451,13 @@ CREATE TABLE attendance_logs (
   CONSTRAINT chk_attendance_logs_status CHECK (status IN ('present', 'late', 'absent', 'on_leave')),
   CONSTRAINT fk_attendance_logs_corrected_by_id FOREIGN KEY (corrected_by_id) REFERENCES employees (id),
   UNIQUE KEY uq_attendance_day (employee_id, log_date),
-  CONSTRAINT chk_attendance_times CHECK (time_in IS NULL OR time_out IS NULL OR time_out >= time_in)
+  CONSTRAINT chk_attendance_times CHECK (time_in IS NULL OR time_out IS NULL OR time_out >= time_in),
+  CONSTRAINT chk_attendance_lunch CHECK (
+        (lunch_in  IS NULL OR lunch_out IS NOT NULL)
+    AND (lunch_out IS NULL OR time_in  IS NULL OR lunch_out >= time_in)
+    AND (lunch_in  IS NULL OR lunch_in >= lunch_out)
+    AND (lunch_in  IS NULL OR time_out IS NULL OR time_out >= lunch_in)
+  )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Accounting & Finance (Jean): accounts
