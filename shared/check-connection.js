@@ -15,7 +15,7 @@ const root = path.dirname(sharedDir);
 const PORTS = { shop: 3001, pos: 3002, attendance: 3003, hr: 3004, accounting: 3005 };
 const TABLES = ["departments", "employees", "users", "leave_requests", "payroll_runs", "payroll_items",
   "categories", "products", "stock_levels", "stock_movements", "suppliers", "purchase_orders", "purchase_order_items",
-  "sales", "sale_items", "customers", "cart_items", "orders", "order_items", "holidays", "attendance_logs",
+  "sales", "sale_items", "customers", "cart_items", "orders", "order_items", "product_reviews", "holidays", "attendance_logs",
   "accounts", "journal_entries", "journal_lines", "salary_releases", "remittances"];
 
 const args = process.argv.slice(2);
@@ -112,8 +112,8 @@ const [tables] = await db.query("SELECT table_name AS t FROM information_schema.
 const have = new Set(tables.map((r) => r.t));
 const absent = TABLES.filter((t) => !have.has(t));
 const extra = [...have].filter((t) => !TABLES.includes(t));
-if (!absent.length) ok("All 26 tables are there");
-else bad(`${absent.length} table(s) missing: ${absent.join(", ")}`, "On the DB host, re-import shared/database/schema.sql into an empty mindafresh_db");
+if (!absent.length) ok(`All ${TABLES.length} tables are there`);
+else bad(`${absent.length} table(s) missing: ${absent.join(", ")}`, "On the DB host, run the missing migrations in shared/database/migrations (for example 003-product-reviews.sql), or re-import shared/database/schema.sql into an empty mindafresh_db");
 if (extra.length) warn(`Extra table(s) not in schema.sql: ${extra.join(", ")}`, "Someone ran sequelize.sync() or edited the database by hand. Remove them, and remove every sync() call");
 
 if (!absent.length) {
@@ -140,7 +140,7 @@ if (!absent.length) {
       ok("CHECK constraints are enforced (an unknown status value is rejected)");
       if (await rejects("Regular")) ok("Status values are case-sensitive ('Regular' is rejected, only 'regular' works)");
       else warn("Status values ignore capital letters: 'Regular' was accepted (same for 'Completed', 'PENDING')",
-        "On the DB host, import shared/database/migrations/001-case-sensitive-status.sql (once the group agrees)");
+        "Normal for this project: always save status values in lowercase, exactly as listed in the blueprint (Section 3)");
     }
   } catch (e) {
     warn(`Could not test CHECK constraints: ${e.message}`);
