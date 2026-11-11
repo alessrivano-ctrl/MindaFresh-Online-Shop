@@ -11,6 +11,7 @@ import * as adminOrder from "../controllers/adminOrderController.js";
 import * as adminCustomer from "../controllers/adminCustomerController.js";
 import * as report from "../controllers/reportController.js";
 import * as adminProduct from "../controllers/adminProductController.js";
+import * as adminDashboard from "../controllers/adminDashboardController.js";
 import * as review from "../controllers/reviewController.js";
 
 const router = express.Router();
@@ -18,6 +19,7 @@ const router = express.Router();
 // Storefront (anyone)
 router.get("/", catalog.index);
 router.get("/products/:code", catalog.show);
+router.get("/photos/:code", catalog.photo);
 
 // Customer accounts
 router.get("/login", auth.showLogin);
@@ -45,7 +47,7 @@ router.post("/orders/:code/cancel", requireCustomer, order.cancel);
 router.post("/orders/:code/reviews", requireCustomer, review.save);
 
 // Staff (users ⨝ employees)
-router.get("/admin", (req, res) => res.redirect("/admin/orders"));
+router.get("/admin", requireRole("admin", "accountant"), adminDashboard.index);
 router.get("/admin/login", auth.showStaffLogin);
 router.post("/admin/login", auth.staffLogin);
 router.get("/admin/logout", auth.staffLogout);

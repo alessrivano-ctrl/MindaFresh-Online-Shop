@@ -94,7 +94,7 @@ export const showStaffLogin = (req, res) => {
   if (req.session.user && SHOP_STAFF_ROLES.includes(req.session.user.role)) {
     // Already logged in (e.g. sent here by requireRole): keep the message for the next page
     res.locals.error_msg.forEach((m) => req.flash("error_msg", m));
-    return res.redirect("/admin/orders");
+    return res.redirect("/admin");
   }
   res.render("admin-login", { title: "Staff log in" });
 };
@@ -107,7 +107,7 @@ export const staffLogin = async (req, res, next) => {
       return res.redirect("/admin/login");
     }
     req.session.user = user;
-    res.redirect("/admin/orders");
+    res.redirect("/admin");
   } catch (err) {
     if (!(err instanceof AppError)) return next(err);
     req.flash("error_msg", err.message);

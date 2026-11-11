@@ -1,12 +1,11 @@
 {{> head}}
 {{> admin-nav}}
 
-<div class="mx-auto flex w-full max-w-[1440px] flex-wrap gap-6 p-6 md:flex-nowrap">
-  {{> admin-side}}
+<div class="mx-auto flex w-full max-w-[1440px] gap-6 p-6 lg:p-9">
 
   <main class="flex min-w-0 flex-1 flex-col gap-5">
     <div class="flex flex-col gap-1">
-      <h1 class="text-[28px] font-extrabold tracking-tight">Reviews</h1>
+      <h1 class="text-[32px] font-extrabold tracking-tight">Reviews</h1>
       <p class="text-sm text-ink-muted">Only customers whose order was delivered can review a product. Hide a review that is rude or not about the product; hidden reviews are kept but not shown in the shop.</p>
     </div>
 
@@ -60,4 +59,4 @@
 </div>
 
 {{> alert/alert}}
-{{> footer}}
+{{> admin-footer}}
